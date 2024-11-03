@@ -16,7 +16,7 @@ def add_user_to_clientes_group(sender, instance, created, **kwargs):
             group1= Group.objects.create(name='clientes')
             group2= Group.objects.create(name='profesionales')
             group3= Group.objects.create(name='ejecutivos')
-            group4= Group.objects.create(name='administrador')
+            group4= Group.objects.create(name='administradores')
         instance.user.groups.add(group1)
 
 
