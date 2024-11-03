@@ -8,6 +8,6 @@
         </form>
     {% else %}
         <a class="btn btn-lg btn-primary" href="{% url 'login' %}">Iniciar Sesión</a>
-        <a class="btn btn-lg btn-warning" href="#">Registrarse</a>
+        <a class="btn btn-lg btn-warning" href="{% url 'register' %}">Registrarse</a>
     {% endif %}
 </div>
