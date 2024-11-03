@@ -28,8 +28,8 @@ admin.site.register(Asistencia, AsistenciaAdmin)
 
 #para la info cliente
 
-@admin.register(infocliente)
-class infoclienteAdmin(admin.ModelAdmin):
+
+class InfoclienteAdmin(admin.ModelAdmin):
     list_display = ('servicio', 'cliente', 'observacion', 'imagen', 'odontograma')
     search_fields = ('cliente__username', 'servicio__nombre')
     list_filter = ('servicio',)
@@ -43,3 +43,7 @@ class infoclienteAdmin(admin.ModelAdmin):
             'fields': ('imagen', 'odontograma')
         }),
     )
+
+admin.site.register(infocliente, InfoclienteAdmin)
+
+#
