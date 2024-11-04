@@ -37,7 +37,7 @@
             {% endif %}
 
                 <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li>
-                <li><a href="#" class="nav-link px-2 text-white">Servicios</a></li>
+                <li><a href="{% url 'servicios' %}" class="nav-link px-2 text-white">Servicios</a></li>
 
                 {% if not user.is_authenticated or group_name == 'clientes' %}
                 <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>
@@ -48,9 +48,10 @@
 
             <div class="d-flex align-items-center" style="gap: 20px;">
                 {% if user.is_authenticated %}
-                    <span class="text-white me-3">
-                        {{ user.username }}
-                    </span>
+                    <li style="list-style-type: none;">
+                        <a class="nav-link px-2 text-white" href="{% url 'profile' %}">{{ group_name_singular|capfirst }}
+                            | {{ user.username }}</a>
+                    </li>
                     <form action="{% url 'logout' %}" method="post" style="display: inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-lg btn-danger">Cerrar Sesión</button>

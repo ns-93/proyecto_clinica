@@ -7,7 +7,7 @@ from django.db.models.signals import post_save
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name='Usuario')
-    image = models.ImageField(default='user/usuario_defecto.jpg', upload_to='users/', verbose_name='Imagen de perfil')
+    image = models.ImageField(default='usuario_defecto.jpg', upload_to='users/', verbose_name='Imagen de perfil')
     address = models.CharField(max_length=150, null=True, blank=True, verbose_name='Direccion')
     location = models.CharField(max_length=100, null=True, blank=True, verbose_name='Localidad')
     telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name='telefono')
