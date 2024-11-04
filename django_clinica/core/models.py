@@ -1,22 +1,32 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import  post_save, post_delete
+from django.dispatch import  receiver
 
 # Create your models here.
 
 #servicios aka definiremos el servicio que ofreceremos o alguna otra acitividad que se requiera
 
+# Modelo de servicios con estados
 class Servicios(models.Model):
-    name= models.CharField(max_length=100, verbose_name='Nombre del Servicio')
-    description= models.TextField(blank=True, null=True, verbose_name='Descripcion')
-    profesional= models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name':'profesionales'},verbose_name='Profesional')
-    n_procedimientos = models.PositiveIntegerField(default=0, verbose_name='Numero de sesiones')
+    STATUS_CHOICES = (
+        ('S', 'Solicitud de Servicio'),
+        ('P', 'En progreso'),
+        ('F', 'Finalizado'),
+    )
+
+    name = models.CharField(max_length=100, verbose_name='Nombre del Servicio')
+    description = models.TextField(blank=True, null=True, verbose_name='Descripción')
+    profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional')
+    n_procedimientos = models.PositiveIntegerField(default=0, verbose_name='Número de sesiones')
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='S', verbose_name='Estado')
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
-        verbose_name= 'servicio'
-        verbose_name_plural= 'servicios'
+        verbose_name = 'servicio'
+        verbose_name_plural = 'servicios'
 
 #hasta aqui llega el punto de servicios
 

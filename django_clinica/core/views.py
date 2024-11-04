@@ -174,3 +174,4 @@ class ServiciosView(TemplateView):
 
         context['servicios'] = servicios
         return context
+    

@@ -38,24 +38,40 @@
                             <p class="card-text">
                                 <strong>Profesional: </strong>{{ servicio.profesional.first_name }} {{ servicio.profesional.last_name }}
                             </p>
+                            <p class="card-text"><strong>Cantidad de procedimientos: </strong>{{ servicio.n_procedimientos }}</p>
 
-                            <!-- Aquí puedes agregar la lógica para mostrar la cantidad de inscriptos si lo deseas -->
-                            <p class="card-text"><strong>Duración del tratamiento: </strong>
-                                {{ servicio.n_procedimientos }} sesiones
-                            </p>
-                            {% if servicio.enabled %}
-                                <h5><span class="badge bg-success w-100">Disponible</span></h5>
-                                {% if group_name == 'clientes' %}
-                                    {% if servicio.is_enrolled %}
-                                        <a class="btn btn-sm btn-warning" href="{% url 'profile' %}">Ir al Perfil</a>
-                                    {% else %}
-                                        <a class="btn btn-sm btn-success" href="#">Solicitar Servicio</a>
-                                    {% endif %}
-                                {% endif %}
-                            {% else %}
-                                <h5><span class="badge bg-danger w-100">No Disponible</span></h5>
+                            {% if group_name == 'administradores' or group_name == 'ejecutivos' or group_name == 'profesionales' %}
+                                <p class="card-text"><strong>Cantidad de solicitantes: </strong>{{ servicio.enrollment_count }}</p>
                             {% endif %}
 
+                            {% if servicio.status == 'F' %}
+                                <h5><span class="badge bg-danger w-100">{{ servicio.get_status_display|upper }}</span></h5>
+                                {% if servicio.is_enrolled %}
+                                    <p class="text-success"><strong>Servicio finalizado</strong></p>
+                                {% endif %}
+                            {% elif servicio.status == 'P' %}
+                                <h5><span class="badge bg-warning text-dark w-100">{{ servicio.get_status_display|upper }}</span></h5>
+                                {% if servicio.is_enrolled %}
+                                    <p class="text-success"><strong>Servicio en progreso</strong></p>
+                                {% endif %}
+                            {% elif servicio.status == 'S' %}
+                                <h5><span class="badge bg-success w-100">{{ servicio.get_status_display|upper }}</span></h5>
+
+                                {% if user.is_authenticated %}
+                                    {% if group_name == 'clientes' %}
+                                        {% if not servicio.is_enrolled %}
+                                            <!-- Botón para solicitar el servicio si no está inscrito -->
+                                            <a class="btn btn-sm btn-success" href="#">Solicitar Servicio</a>
+                                        {% else %}
+                                            <!-- Mensaje que indica que ya está inscrito o que la solicitud está en curso -->
+                                            <p class="text-success"><strong>Solicitud en curso o servicio ya inscrito</strong></p>
+                                        {% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    <p class="text-muted"><em>Inicia sesión para solicitar este servicio</em></p>
+                                {% endif %}
+                            {% endif %}
+                            
                             {% if group_name == 'administradores' or group_name == 'ejecutivos' %}
                                 <a class="btn btn-sm btn-warning" href="#">Editar</a>
                                 <a class="btn btn-sm btn-danger" href="#">Eliminar</a>
