@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView
 
 urlpatterns = [
         #pagina de inicio
@@ -13,4 +13,6 @@ urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
     #pagina de servicios y lista de servicios
     path('servicios/', ServiciosView.as_view(), name='servicios'),
+    #pagina para crear servicios
+    path('servicios/create/', ServicioCreateView.as_view(), name='servicios_create'),
 ]

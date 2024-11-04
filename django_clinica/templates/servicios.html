@@ -8,8 +8,8 @@
             </div>
             <div class="col">
                 <span class="float-end">
-                    {% if group_name == 'administradores' %}
-                        <a class="btn btn-success" href="#">Agregar Servicio</a>
+                    {% if group_name == 'administradores' or group_name == 'ejecutivos' %}
+                        <a class="btn btn-success" href="{% url 'servicios_create' %}">Agregar Servicio</a>
                     {% endif %}
                 </span>
             </div>

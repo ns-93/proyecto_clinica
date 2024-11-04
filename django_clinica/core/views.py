@@ -1,11 +1,15 @@
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, CreateView
 from django.contrib.auth.models import Group
-from .forms import RegisterForm, UserForm, ProfileForm
+from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm  
 from django.views import View
 from django.utils.decorators import method_decorator
 from .models import Servicios, RegistroServicio
+from django.urls import reverse_lazy
+from django.contrib import messages
+from django.contrib.auth.mixins import UserPassesTestMixin
 # Create your views here.
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
@@ -63,23 +67,6 @@ def add_group_name_to_context(view_class):
 
     view_class.dispatch = dispatch
     return view_class
-
-#
-#class CustomTemplateView(TemplateView):
-    group_name= None
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        group_name = None
-        if user.is_authenticated:
-            group = Group.objects.filter(user=user).first()
-            if group:
-                group_name = group.name
-        context['group_name'] = group_name
-        return context
-
-
 
 
 #pagina principal
@@ -174,4 +161,27 @@ class ServiciosView(TemplateView):
 
         context['servicios'] = servicios
         return context
-    
+
+
+
+#crear un nuevo servicio
+@add_group_name_to_context
+class ServicioCreateView(UserPassesTestMixin, CreateView):
+    model = Servicios 
+    form_class = ServiciosForm  
+    template_name = 'create_servicios.html'  
+    success_url = reverse_lazy('servicios')  
+
+    def test_func(self):
+        return self.request.user.groups.filter(name__in=['administradores', 'ejecutivos']).exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'El registro del servicio se ha guardado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al guardar el registro del servicio.')
+        return self.render_to_response(self.get_context_data(form=form))

@@ -96,3 +96,4 @@ class infocliente(models.Model):
         verbose_name_plural = 'Registros'
 #agregar otro campo para el odontograma y dejar el campo que esta para que pueda subir documento relacionados con el paciente
 #hasta aqui llega esto
+
