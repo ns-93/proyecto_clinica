@@ -10,6 +10,8 @@ from .models import Servicios, RegistroServicio
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.conf import settings
+import os
 # Create your views here.
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
@@ -160,6 +162,19 @@ class ServiciosView(TemplateView):
             item.enrollment_count = enrollment_count
 
         context['servicios'] = servicios
+        return context
+
+
+
+# pagina de error para usuario que intenten acceder mediante la ruta a servicios no permitidos
+@add_group_name_to_context
+class ErrorView(TemplateView):
+    template_name = 'error.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        error_image_path = os.path.join(settings.MEDIA_URL, 'error.png')
+        context['error_image_path'] = error_image_path
         return context
 
 
