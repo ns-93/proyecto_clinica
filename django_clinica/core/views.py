@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, UpdateView
 from django.contrib.auth.models import Group
 from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm  
 from django.views import View
@@ -210,3 +210,41 @@ class ServicioCreateView(UserPassesTestMixin, CreateView):
         return self.render_to_response(self.get_context_data(form=form))
     
 #hasta aqui la creacion de un nuevo servico
+
+
+# EDICIÓN DE UN SERVICIO CREADO
+@add_group_name_to_context
+class ServicioEditView(UserPassesTestMixin, UpdateView):
+    # Define el modelo a utilizar para esta vista, en este caso, Servicio
+    model = Servicios
+    # Indica el formulario que se usará para editar un servicio
+    form_class = ServiciosForm
+    # Plantilla HTML donde se mostrará el formulario de edición
+    template_name = 'edit_servicios.html'
+    # URL a la que se redirige al usuario después de una edición exitosa
+    success_url = reverse_lazy('servicios')
+
+    # Método para verificar si el usuario tiene permiso para acceder a la vista
+    def test_func(self):
+        # Permite el acceso solo si el usuario pertenece al grupo 'administrativos'
+        return self.request.user.groups.filter(name__in=['administradores', 'ejecutivos']).exists()
+
+    # Método para manejar la falta de permisos del usuario
+    def handle_no_permission(self):
+        # Redirige al usuario a una página de error si no tiene permisos
+        return redirect('error')
+
+    # Método para manejar el caso en el que el formulario es válido
+    def form_valid(self, form):
+        # Guarda el formulario y muestra un mensaje de éxito
+        form.save()
+        messages.success(self.request, 'El servicio se ha actualizado correctamente')
+        # Redirige a la URL de éxito
+        return redirect(self.success_url)
+
+    # Método para manejar el caso en el que el formulario es inválido
+    def form_invalid(self, form):
+        # Muestra un mensaje de error si hay un problema al actualizar
+        messages.error(self.request, 'Ha ocurrido un error al actualizar el servicio')
+        # Renderiza la respuesta con el contexto actual del formulario
+        return self.render_to_response(self.get_context_data(form=form))

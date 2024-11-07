@@ -82,7 +82,9 @@
                             
                             <!-- Opciones para editar o eliminar el servicio (solo visible para administradores y ejecutivos) -->
                             {% if group_name == 'administradores' or group_name == 'ejecutivos' %}
-                                <a class="btn btn-sm btn-warning" href="#">Editar</a>
+                                <!-- Enlace para editar un servicio -->
+                                <!-- Se verifica si el usuario tiene permiso para ver el botón "Editar" usando las condiciones previas en la vista -->
+                                <a class="btn btn-sm btn-warning" href="{% url 'editar_servicios' servicio.pk %}">Editar</a>
                                 <a class="btn btn-sm btn-danger" href="#">Eliminar</a>
                             {% endif %}
                         </div>

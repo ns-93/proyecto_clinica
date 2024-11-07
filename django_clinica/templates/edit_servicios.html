@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% load crispy_forms_tags %} <!-- Carga de los tags de crispy_forms para un mejor diseño del formulario -->
+
+    <div class="container my-4">
+        <h2>Editar Servicio</h2> <!-- Título de la página indicando que es una edición de servicio -->
+
+        <!-- Sección de mensajes -->
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                    <!-- Muestra cada mensaje de error o éxito que pueda haber -->
+                    <div class="alert alert-danger" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Formulario de edición del servicio -->
+        <form action="" method="post">
+            {% csrf_token %} <!-- Token CSRF para la seguridad de la sesión -->
+
+            <!-- Contenedor con estilos para el formulario de edición -->
+            <div class="card mx-auto my-5" style="width: 40rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Puede modificar todos estos campos</h5> <!-- Instrucciones para el usuario -->
+                    {{ form | crispy }} <!-- Renderiza el formulario con el estilo de crispy_forms -->
+
+                    <!-- Enlaces de navegación -->
+                    <a class="card-link" href="{% url 'home' %}">Inicio</a>
+                    <a class="card-link" href="{% url 'servicios' %}">Servicios</a>
+                    
+                    <!-- Botón para enviar el formulario y guardar cambios -->
+                    <button class="btn btn-primary float-end" type="submit">Guardar cambios</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+{% endblock %}

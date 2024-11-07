@@ -17,9 +17,11 @@
     <div class="container">  <!-- Contenedor general de la cabecera -->
         <div class="d-flex flex-wrap align-items-center justify-content-between">  <!-- Contenedor flexible para alinear los elementos -->
             <!-- Enlace a la página de inicio -->
-            <a href="{% url 'home' %}" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none text-center">
-                Dental Knights  <!-- Nombre del sitio o marca -->
+            <a href="{% url 'home' %}" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none text-center" style="margin-right: 30px;">
+                <img src="/media/dienteicon.jpg" alt="Logo" style="width: 24px; height: 24px; margin-right: 8px;">  <!-- Imagen del logo -->
+                <span class="ms-3">Dental Knights</span> <!-- Nombre del sitio separado con margen -->
             </a>
+            
 
             {% if user.is_authenticated %}  <!-- Si el usuario está autenticado -->
                 {% if group_name == 'clientes' %}  <!-- Si el grupo del usuario es 'clientes' -->
