@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- Contenedor principal para el formulario de eliminación -->
+    <div class="container my-4">
+        <h2>Eliminar Servicio</h2>
+        <!-- Formulario para manejar la eliminación del servicio -->
+        <form method="post">
+            {% csrf_token %}
+            <!-- Tarjeta que contiene el mensaje de confirmación de eliminación -->
+            <div class="card w-50 mx-auto my-5">
+                <div class="card-body">
+                    <h5 class="card-title">Proceso de eliminación irreversible</h5>
+                    <!-- Mensaje para confirmar que el usuario quiere eliminar el servicio -->
+                    <p>¿Estás seguro de que deseas eliminar el servicio <strong>{{ servicio.nombre }}</strong>?</p>
+
+                    <!-- Botones de acción: eliminar (abre el modal de confirmación) y cancelar -->
+                    <div class="float-end">
+                        <!-- Botón que abre el modal para confirmar la eliminación -->
+                        <a type="button" class="btn btn-danger mt-auto" href="" data-bs-toggle="modal"
+                           data-bs-target="#deleteModal">Eliminar</a>
+                        <!-- Botón para cancelar y volver a la lista de servicios -->
+                        <a class="btn btn-secondary mt-auto" href="{% url 'servicios' %}">Cancelar</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal para confirmar la eliminación del registro -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Cabecera del modal con el título de confirmación -->
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirmar la eliminación</h5>
+                            <!-- Botón para cerrar el modal -->
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <!-- Cuerpo del modal con el mensaje de confirmación -->
+                        <div class="modal-body">
+                            ¿Estás seguro de que deseas eliminar este servicio? (esta acción no se puede deshacer)
+                        </div>
+                        <!-- Pie del modal con botones para cancelar o confirmar la eliminación -->
+                        <div class="modal-footer">
+                            <!-- Botón para cancelar y cerrar el modal -->
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <!-- Botón para confirmar y realizar la eliminación -->
+                            <button type="submit" class="btn btn-danger">Eliminar Servicio</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

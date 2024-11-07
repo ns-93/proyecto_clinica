@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from django.views.generic import TemplateView, CreateView, UpdateView
+from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import Group
 from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm  
 from django.views import View
@@ -248,3 +248,31 @@ class ServicioEditView(UserPassesTestMixin, UpdateView):
         messages.error(self.request, 'Ha ocurrido un error al actualizar el servicio')
         # Renderiza la respuesta con el contexto actual del formulario
         return self.render_to_response(self.get_context_data(form=form))
+    
+
+
+@add_group_name_to_context
+class ServicioDeleteView(UserPassesTestMixin, DeleteView):
+    # Especifica el modelo de datos que se eliminará (en este caso, Servicio)
+    model = Servicios
+    # Define la plantilla HTML que se mostrará para confirmar la eliminación
+    template_name = 'delete_servicio.html'
+    # URL a la que se redirigirá el usuario si la eliminación se realiza con éxito
+    success_url = reverse_lazy('servicios')
+
+    # Define el criterio para que un usuario pueda acceder a esta vista.
+    # Solo los usuarios del grupo "administrativos" pueden acceder
+    def test_func(self):
+        return self.request.user.groups.filter(name__in=['administradores', 'ejecutivos']).exists()
+
+    # Maneja el caso en que el usuario no tiene permiso, redirigiéndolo a una página de error
+    def handle_no_permission(self):
+        return redirect('error')
+
+    # Método que se ejecuta cuando la eliminación es válida
+    def form_valid(self, form):
+        # Envía un mensaje de éxito al usuario informando que el registro fue eliminado
+        messages.success(self.request, 'El registro se ha eliminado correctamente')
+        # Llama al método original form_valid() para continuar el proceso de eliminación
+        return super().form_valid(form)
+

@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView
 from django.contrib.auth.decorators import login_required
 
 # Definición de las rutas o URLs para la aplicación
@@ -23,5 +23,8 @@ urlpatterns = [
     path('error/', login_required(ErrorView.as_view()), name='error'),
     # Ruta para la edición de un servicio específico
     path('servicios/<int:pk>/edit/', login_required(ServicioEditView.as_view()), name='editar_servicios'),
+    # Definimos la URL para la eliminación de un servicio específico.
+    path('servicios/<int:pk>/delete/', login_required(ServicioDeleteView.as_view()), name='eliminar_servicios'),
+
 
 ]
