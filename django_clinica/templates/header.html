@@ -1,68 +1,72 @@
-{% if user.is_authenticated %}
-    {% if group_name == 'clientes' %}
-        <header class="p-3 text-bg-dark bg-primary">
-    {% elif group_name == 'profesionales' %}
-        <header class="p-3 text-bg-dark bg-success">
-    {% elif group_name == 'ejecutivos' %}
-        <header class="p-3 text-bg-dark bg-danger">
-    {% elif group_name == 'administradores' %}
-        <header class="p-3 text-bg-dark bg-info">
-    {% else %}
-        <header class="p-3 text-bg-dark bg-dark">
+{% if user.is_authenticated %}  <!-- Verifica si el usuario está autenticado -->
+    {% if group_name == 'clientes' %}  <!-- Si el usuario pertenece al grupo 'clientes' -->
+        <header class="p-3 text-bg-dark bg-primary">  <!-- Cabecera con fondo azul para 'clientes' -->
+    {% elif group_name == 'profesionales' %}  <!-- Si el usuario pertenece al grupo 'profesionales' -->
+        <header class="p-3 text-bg-dark bg-success">  <!-- Cabecera con fondo verde para 'profesionales' -->
+    {% elif group_name == 'ejecutivos' %}  <!-- Si el usuario pertenece al grupo 'ejecutivos' -->
+        <header class="p-3 text-bg-dark bg-danger">  <!-- Cabecera con fondo rojo para 'ejecutivos' -->
+    {% elif group_name == 'administradores' %}  <!-- Si el usuario pertenece al grupo 'administradores' -->
+        <header class="p-3 text-bg-dark bg-info">  <!-- Cabecera con fondo azul claro para 'administradores' -->
+    {% else %}  <!-- Si el grupo no coincide con ninguno de los anteriores -->
+        <header class="p-3 text-bg-dark bg-dark">  <!-- Cabecera con fondo oscuro por defecto -->
     {% endif %}
-{% else %}
-    <header class="p-3 text-bg-dark bg-black">
+{% else %}  <!-- Si el usuario no está autenticado -->
+    <header class="p-3 text-bg-dark bg-black">  <!-- Cabecera con fondo negro para usuarios no autenticados -->
 {% endif %}
 
-    <div class="container">
-        <div class="d-flex flex-wrap align-items-center justify-content-between">
+    <div class="container">  <!-- Contenedor general de la cabecera -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between">  <!-- Contenedor flexible para alinear los elementos -->
+            <!-- Enlace a la página de inicio -->
             <a href="{% url 'home' %}" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none text-center">
-                DentalArt<br>El Arte de Tu Sonrisa
+                Dental Knights  <!-- Nombre del sitio o marca -->
             </a>
 
-            {% if user.is_authenticated %}
-                {% if group_name == 'clientes' %}
-                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-primary">
-                {% elif group_name == 'profesionales' %}
-                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-success">
-                {% elif group_name == 'ejecutivos' %}
-                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-danger">
-                {% elif group_name == 'administradores' %}
-                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-info">
-                {% else %}
-                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-dark">
+            {% if user.is_authenticated %}  <!-- Si el usuario está autenticado -->
+                {% if group_name == 'clientes' %}  <!-- Si el grupo del usuario es 'clientes' -->
+                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-primary">  <!-- Menú de navegación con fondo azul -->
+                {% elif group_name == 'profesionales' %}  <!-- Si el grupo del usuario es 'profesionales' -->
+                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-success">  <!-- Menú de navegación con fondo verde -->
+                {% elif group_name == 'ejecutivos' %}  <!-- Si el grupo del usuario es 'ejecutivos' -->
+                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-danger">  <!-- Menú de navegación con fondo rojo -->
+                {% elif group_name == 'administradores' %}  <!-- Si el grupo del usuario es 'administradores' -->
+                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-info">  <!-- Menú de navegación con fondo azul claro -->
+                {% else %}  <!-- Si el grupo no coincide con ninguno de los anteriores -->
+                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-dark">  <!-- Menú de navegación con fondo oscuro por defecto -->
                 {% endif %}
-            {% else %}
-                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-black">
+            {% else %}  <!-- Si el usuario no está autenticado -->
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 bg-black">  <!-- Menú de navegación con fondo negro -->
             {% endif %}
 
-                <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li>
-                <li><a href="{% url 'servicios' %}" class="nav-link px-2 text-white">Servicios</a></li>
+                <!-- Elementos del menú de navegación -->
+                <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li>  <!-- Enlace a la página de inicio -->
+                <li><a href="{% url 'servicios' %}" class="nav-link px-2 text-white">Servicios</a></li>  <!-- Enlace a la página de servicios -->
 
-                {% if not user.is_authenticated or group_name == 'clientes' %}
-                <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>
-                <li><a href="#" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li>
-                <li><a href="#" class="nav-link px-2 text-white">Acerca de</a></li>
+                {% if not user.is_authenticated or group_name == 'clientes' %}  <!-- Si el usuario no está autenticado o es un cliente -->
+                <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>  <!-- Enlace a la página de precios -->
+                <li><a href="#" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li>  <!-- Enlace a la sección de preguntas y respuestas -->
+                <li><a href="#" class="nav-link px-2 text-white">Acerca de</a></li>  <!-- Enlace a la sección 'Acerca de' -->
                 {% endif %}
-            </ul> 
+            </ul>  <!-- Fin del menú de navegación -->
 
-            <div class="d-flex align-items-center" style="gap: 20px;">
-                {% if user.is_authenticated %}
-                    <li style="list-style-type: none;">
-                        <a class="nav-link px-2 text-white" href="{% url 'profile' %}">{{ group_name_singular|capfirst }}
-                            | {{ user.username }}</a>
+            <!-- Sección de acciones de usuario -->
+            <div class="d-flex align-items-center" style="gap: 20px;">  <!-- Contenedor para botones y acciones del usuario -->
+                {% if user.is_authenticated %}  <!-- Si el usuario está autenticado -->
+                    <li style="list-style-type: none;">  <!-- Elemento de lista sin estilo -->
+                        <a class="nav-link px-2 text-white" href="{% url 'profile' %}">{{ group_name_singular|capfirst }}  <!-- Enlace a la página de perfil del usuario -->
+                            | {{ user.username }}</a>  <!-- Muestra el nombre de usuario -->
                     </li>
+                    <!-- Formulario para cerrar sesión -->
                     <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-lg btn-danger">Cerrar Sesión</button>
+                        {% csrf_token %}  <!-- Token CSRF para protección del formulario -->
+                        <button type="submit" class="btn btn-lg btn-danger">Cerrar Sesión</button>  <!-- Botón para cerrar sesión -->
                     </form>
-                {% else %}   
-                    <a href="{% url 'login' %}" class="btn btn-outline-light me-2">Iniciar Sesión</a>
-                    <a href="{% url 'register' %}" class="btn btn-warning">Registrarse</a>
+                {% else %}  <!-- Si el usuario no está autenticado -->
+                    <!-- Enlaces para iniciar sesión o registrarse -->
+                    <a href="{% url 'login' %}" class="btn btn-outline-light me-2">Iniciar Sesión</a>  <!-- Enlace para iniciar sesión -->
+                    <a href="{% url 'register' %}" class="btn btn-warning">Registrarse</a>  <!-- Enlace para registrarse -->
                 {% endif %}
-            </div>
-        </div>
+            </div>  <!-- Fin de las acciones del usuario -->
+        </div>  <!-- Fin del contenedor principal -->
     </div>
-</header>
-
+</header>  <!-- Fin del encabezado -->
 

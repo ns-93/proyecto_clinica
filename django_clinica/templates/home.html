@@ -1,14 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}  <!-- Extiende el archivo base.html, que contiene la estructura general del sitio -->
 
+{% block content %}  <!-- Bloque que reemplaza el contenido principal en base.html -->
 
-{% block content %}
-
-    <div class="container my-5">
+    <div class="container my-5">  <!-- Contenedor para el contenido con un margen de 5 unidades -->
+        <!-- Título de bienvenida a la clínica con estilo de texto -->
         <h1 class="display-4 fw-normal text-body-emphasis text-center">
-            Bienvenidos a Clinica DentalArt <br> El Arte de Tu Sonrisa
+            Bienvenidos a Clinica Dental Knights <br> Nuestra compromiso es Proteger tu sonrisa
         </h1>
     </div>
 
-    {% include 'buttons_logins.html' %}
+    <!-- Se incluye un archivo parcial que probablemente contiene botones de inicio de sesión o registro -->
+    {% include 'buttons_logins.html' %}  <!-- Incluye el archivo buttons_logins.html dentro de este bloque -->
 
-{% endblock %}
+{% endblock %}  <!-- Fin del bloque content, que se inserta en base.html -->

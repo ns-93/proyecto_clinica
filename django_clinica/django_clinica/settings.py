@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+# Se define la variable BASE_DIR que contiene la ruta base del proyecto.
+# Esto nos permite construir rutas relativas de manera más sencilla.
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,10 +45,12 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
 ]
 
+# Configuración de crispy-forms para usar el framework de diseño bootstrap5.
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
+# Middleware de seguridad y autenticación para proteger la aplicación.
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -57,8 +61,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Configuración de URL raíz
 ROOT_URLCONF = 'django_clinica.urls'
 
+# Configuración de plantillas
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -75,9 +81,10 @@ TEMPLATES = [
     },
 ]
 
+# Configuración de WSGI y ASGI
 WSGI_APPLICATION = 'django_clinica.wsgi.application'
 
-
+# Configuración de la base de datos
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -88,10 +95,11 @@ DATABASES = {
     }
 }
 
-
+# Validadores de contraseñas
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
+# Lista de validadores de contraseñas que se utilizan para verificar la seguridad de las contraseñas de los usuarios.
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -111,18 +119,20 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
+# Código de idioma, en este caso español de Chile.
 LANGUAGE_CODE = 'es-cl'
-
+# Zona horaria. Debes ajustarla según la ubicación del proyecto.
 TIME_ZONE = 'UTC'
-
+# Habilita la internacionalización para soportar múltiples idiomas.
 USE_I18N = True
-
+# Habilita el soporte para zonas horarias.
 USE_TZ = True
 
-
+# Configuración de archivos estáticos
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# URL de los archivos estáticos, como CSS y JS.
 STATIC_URL = 'static/'
 
 # Default primary key field type
@@ -130,13 +140,16 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# Configuración de archivos multimedia
 # Definimos la carpeta Media files para el manejo de imagenes
+# URL y ruta del directorio para almacenar archivos subidos, como imágenes y documentos.
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Ruta completa para los archivos multimedia.
 
 
-
+# Configuración de redirección de login/logout
 #login y logout
+# URL a la que el usuario será redirigido después de iniciar sesión.
 LOGIN_REDIRECT_URL = 'home'
+# URL a la que el usuario será redirigido después de cerrar sesión.
 LOGOUT_REDIRECT_URL = 'home'

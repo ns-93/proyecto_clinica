@@ -1,29 +1,31 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}  <!-- Extiende la plantilla base.html para reutilizar la estructura general de la página -->
 
+{% block content %}  <!-- Inicia el bloque de contenido específico de esta plantilla -->
 
-{% block content %}
-    {% load crispy_forms_tags %}
-    <div class="container mt-3">
-        <h2>INICIO DE SESION</h2>
-        <form method="POST" action="">
-            {% csrf_token %}
+    {% load crispy_forms_tags %}  <!-- Carga las etiquetas de crispy-forms para aplicar un mejor estilo a los formularios -->
 
-            <div class="card mx-auto" style="width: 30rem;">
-                <div class="card-body">
-                    <h4 class="card-title text-center">Bienvenido a DentalArt</h4><br>
-                    <h5 class="card-title text-center">Iniciar Sesión</h5><br>
+    <div class="container mt-3">  <!-- Contenedor con un margen superior de 3 unidades -->
+        <h2>INICIO DE SESION</h2>  <!-- Título principal de la página -->
+
+        <form method="POST" action="">  <!-- Formulario para iniciar sesión (el método es POST para enviar datos al servidor) -->
+            {% csrf_token %}  <!-- Token CSRF para proteger el formulario contra ataques CSRF -->
+
+            <div class="card mx-auto" style="width: 30rem;">  <!-- Tarjeta para mostrar el formulario, centrada y con un ancho de 30 rem -->
+                <div class="card-body">  <!-- Cuerpo de la tarjeta -->
+                    <h4 class="card-title text-center">Bienvenido a DentalArt</h4><br>  <!-- Subtítulo de bienvenida centrado -->
+                    <h5 class="card-title text-center">Iniciar Sesión</h5><br>  <!-- Título del formulario, centrado -->
+
+                    {{ form | crispy }}  <!-- Aplica el filtro crispy para mejorar el diseño del formulario (requiere crispy-forms) -->
                     
-                    {{ form | crispy }}
-                    <div class="card-body">
-                        <a class="card-link" href="{% url 'home' %}">Inicio</a>
-                        <a class="card-link" href="{% url 'register' %}">Registrarse</a>
-                    </div class="card-body">
-                    <button class="btn btn-sm btn-primary float-end" type="submit">Iniciar sesión</button>
+                    <div class="card-body">  <!-- Contenedor dentro de la tarjeta para los enlaces -->
+                        <a class="card-link" href="{% url 'home' %}">Inicio</a>  <!-- Enlace para regresar a la página principal -->
+                        <a class="card-link" href="{% url 'register' %}">Registrarse</a>  <!-- Enlace para redirigir a la página de registro -->
+                    </div>
+
+                    <button class="btn btn-sm btn-primary float-end" type="submit">Iniciar sesión</button>  <!-- Botón para enviar el formulario y realizar el inicio de sesión, alineado a la derecha -->
                 </div>
             </div>
         </form>
     </div>
 
-
-
-{% endblock %}
+{% endblock %}  <!-- Finaliza el bloque de contenido específico de esta plantilla -->

@@ -1,50 +1,50 @@
+{% extends 'base.html' %}  <!-- Extiende la plantilla base.html, heredando su estructura general -->
 
-{% extends 'base.html' %}
+{% block content %}  <!-- Inicia el bloque de contenido específico para esta plantilla -->
 
-{% block content %}
-
-    <div class="container my-3">
-        <div class="row">
-            <div class="col-md-4">
+    <div class="container my-3">  <!-- Contenedor principal con un margen superior -->
+        <div class="row">  <!-- Fila para dividir el contenido en dos columnas -->
+            <div class="col-md-4">  <!-- Columna para los datos del perfil (1/3 del ancho) -->
                 <!-- CARD DATOS DE PERFIL -->
-                <div class="card border rounded-2 shadow p-3 mb-3">
-                    <div class="card-body">
-                        <div class="text-center">
-                            <img class="img-thumbnail rounded-circle mb-3" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 150px;">
+                <div class="card border rounded-2 shadow p-3 mb-3">  <!-- Tarjeta de perfil con borde, sombra y padding -->
+                    <div class="card-body">  <!-- Cuerpo de la tarjeta donde se coloca la información -->
+                        <div class="text-center">  <!-- Centra la imagen de perfil -->
+                            <img class="img-thumbnail rounded-circle mb-3" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 150px;">  <!-- Imagen de perfil del usuario -->
                         </div>
-                        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-                        <hr>
-                        <p><strong>Nombre de usuario: </strong>{{ user.username }}</p>
-                        <p><strong>Domicilio: </strong>{{ user.profile.address }}</p>
-                        <p><strong>Localidad: </strong>{{ user.profile.location }}</p>
-                        <p><strong>Teléfono: </strong>{{ user.profile.telephone }}</p>
-                        <p><strong>Correo electrónico: </strong>{{ user.email }}</p>
-                        <hr>
-                        <div class="text-center">
-                            {% if request.user.username == 'admin' %}
-                                <a class="btn btn-warning w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>
+                        <h2>{{ user.first_name }} {{ user.last_name }}</h2>  <!-- Nombre completo del usuario -->
+                        <hr>  <!-- Línea horizontal para separar las secciones -->
+                        <p><strong>Nombre de usuario: </strong>{{ user.username }}</p>  <!-- Nombre de usuario -->
+                        <p><strong>Domicilio: </strong>{{ user.profile.address }}</p>  <!-- Dirección del usuario -->
+                        <p><strong>Localidad: </strong>{{ user.profile.location }}</p>  <!-- Localidad del usuario -->
+                        <p><strong>Teléfono: </strong>{{ user.profile.telephone }}</p>  <!-- Teléfono del usuario -->
+                        <p><strong>Correo electrónico: </strong>{{ user.email }}</p>  <!-- Correo electrónico del usuario -->
+                        <hr>  <!-- Línea horizontal -->
+                        <div class="text-center">  <!-- Contenedor para los botones de acción -->
+                            {% if request.user.username == 'admin' %}  <!-- Verifica si el usuario es el administrador -->
+                                <a class="btn btn-warning w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>  <!-- Enlace al panel de administración -->
                             {% endif %}
-                            <a class="btn btn-outline-secondary w-100 mb-1" href="#" data-bs-toggle="modal" data-bs-target="#editProfileModal">Editar Perfil</a>
-                            <form method="POST" action="{% url 'logout' %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger w-100">Cerrar sesión</button>
+                            <a class="btn btn-outline-secondary w-100 mb-1" href="#" data-bs-toggle="modal" data-bs-target="#editProfileModal">Editar Perfil</a>  <!-- Enlace para abrir el modal de edición de perfil -->
+                            <form method="POST" action="{% url 'logout' %}" class="d-inline">  <!-- Formulario para cerrar sesión -->
+                                {% csrf_token %}  <!-- Token CSRF para proteger el formulario contra ataques -->
+                                <button type="submit" class="btn btn-danger w-100">Cerrar sesión</button>  <!-- Botón para cerrar sesión -->
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-8">
-                <div class="card border rounded-2 shadow p-3 mb-3">
-                    <div class="card-body">
+
+            <div class="col-md-8">  <!-- Columna para el contenido específico del usuario (2/3 del ancho) -->
+                <div class="card border rounded-2 shadow p-3 mb-3">  <!-- Otra tarjeta para mostrar el contenido relacionado al usuario -->
+                    <div class="card-body">  <!-- Cuerpo de la tarjeta -->
                         <!-- Evaluar grupo al que pertenece el usuario -->
-                        {% if group_name == 'clientes' %}
-                            {% include 'profile/clientes.html' %}
-                        {% elif group_name == 'profesionales' %}
-                            {% include 'profile/profesionales.html' %}
-                        {% elif group_name == 'ejecutivos' %}
-                            {% include 'profile/ejecutivo.html' %}
-                        {% elif group_name == 'administradores' %}
-                            {% include 'profile/admin.html' %}
+                        {% if group_name == 'clientes' %}  <!-- Si el usuario pertenece al grupo 'clientes' -->
+                            {% include 'profile/clientes.html' %}  <!-- Incluir la plantilla 'clientes.html' -->
+                        {% elif group_name == 'profesionales' %}  <!-- Si el usuario pertenece al grupo 'profesionales' -->
+                            {% include 'profile/profesionales.html' %}  <!-- Incluir la plantilla 'profesionales.html' -->
+                        {% elif group_name == 'ejecutivos' %}  <!-- Si el usuario pertenece al grupo 'ejecutivos' -->
+                            {% include 'profile/ejecutivo.html' %}  <!-- Incluir la plantilla 'ejecutivo.html' -->
+                        {% elif group_name == 'administradores' %}  <!-- Si el usuario pertenece al grupo 'administradores' -->
+                            {% include 'profile/admin.html' %}  <!-- Incluir la plantilla 'admin.html' -->
                         {% endif %}
                     </div>
                 </div>    
@@ -57,51 +57,51 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>  <!-- Título del modal -->
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>  <!-- Botón para cerrar el modal -->
                 </div>
-                <form action="" method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
+                <form action="" method="post" enctype="multipart/form-data">  <!-- Formulario para actualizar el perfil -->
+                    {% csrf_token %}  <!-- Token CSRF para protección -->
                     <div class="modal-body">
                         <div class="d-flex">
-                            <img class="mx-auto img-thumbnail rounded-circle mb-3" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 100px;">
+                            <img class="mx-auto img-thumbnail rounded-circle mb-3" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 100px;">  <!-- Imagen de perfil actual -->
                         </div>
                         <div class="mb-3">
                             <label for="image">Imagen de perfil</label>
-                            <input class="form-control" type="file" name="image" id="image">
+                            <input class="form-control" type="file" name="image" id="image">  <!-- Campo para cambiar la imagen de perfil -->
                         </div>
                         <div class="d-flex">
                             <div class="mb-3 mr-2">
                                 <label for="first_name">Nombre</label>
-                                <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">
+                                <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">  <!-- Campo para editar el nombre -->
                             </div>
                             <div class="mb-3">
                                 <label for="last_name">Apellido</label>
-                                <input type="text" class="form-control" name="last_name" value="{{ user.last_name }}">
+                                <input type="text" class="form-control" name="last_name" value="{{ user.last_name }}">  <!-- Campo para editar el apellido -->
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="address">Dirección</label>
-                            <input type="text" class="form-control" name="address" value="{{ user.profile.address }}">
+                            <input type="text" class="form-control" name="address" value="{{ user.profile.address }}">  <!-- Campo para editar la dirección -->
                         </div>
                         <div class="mb-3">
                             <label for="location">Localidad</label>
-                            <input type="text" class="form-control" name="location" value="{{ user.profile.location }}">
+                            <input type="text" class="form-control" name="location" value="{{ user.profile.location }}">  <!-- Campo para editar la localidad -->
                         </div>
                         <div class="d-flex">
                             <div class="mb-3 mr-2">
                                 <label for="telephone">Teléfono</label>
-                                <input type="text" class="form-control" name="telephone" value="{{ user.profile.telephone }}">
+                                <input type="text" class="form-control" name="telephone" value="{{ user.profile.telephone }}">  <!-- Campo para editar el teléfono -->
                             </div>
                             <div class="mb-3">
                                 <label for="email">Email</label>
-                                <input type="text" class="form-control" name="email" value="{{ user.email }}" readonly>
+                                <input type="text" class="form-control" name="email" value="{{ user.email }}" readonly>  <!-- Campo para ver el email, solo lectura -->
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>  <!-- Botón para cerrar el modal -->
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>  <!-- Botón para guardar los cambios -->
                     </div>
                 </form>
             </div>

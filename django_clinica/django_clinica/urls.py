@@ -18,14 +18,26 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 
-
+# Definición de las rutas de URL del proyecto.
 urlpatterns = [
+    # Ruta para acceder al panel de administración de Django.
+    # 'admin/' es la URL para acceder a la interfaz de administración.
     path('admin/', admin.site.urls),
+
+    # Ruta para las URLs de la app 'core'.
+    # Esto incluye todas las URLs definidas en el archivo 'core/urls.py'.
     path('', include('core.urls')),
+
+    # Ruta para las URLs de autenticación proporcionadas por Django (login, logout, etc.).
+    # Esto incluye las URLs estándar de Django para manejo de usuarios.
     path('accounts/', include('django.contrib.auth.urls')),
 ]
 
-
+# Solo se ejecutará si el modo DEBUG está habilitado.
+# Esto permite servir archivos multimedia (como imágenes) durante el desarrollo.
 if settings.DEBUG:
+    # Importamos la función para manejar archivos estáticos en el entorno de desarrollo.
     from django.conf.urls.static import static
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Añadimos una ruta para servir archivos multimedia, 
+    # basada en la configuración MEDIA_URL y MEDIA_ROOT en el archivo settings.py.

@@ -1,31 +1,40 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}  <!-- Extiende de 'base.html', el archivo base que incluye la estructura general del sitio -->
 
-{% block content %}
-    {% load crispy_forms_tags %}
-    <div class="container my-4">
-        <h2>Agregar Nuevo Servicio</h2>
+{% block content %}  <!-- Bloque donde se inserta el contenido específico de esta página -->
+    {% load crispy_forms_tags %}  <!-- Carga la etiqueta crispy_forms para mejorar el estilo de los formularios -->
+
+    <div class="container my-4">  <!-- Contenedor con margen vertical para el contenido principal -->
+        <h2>Agregar Nuevo Servicio</h2>  <!-- Título de la página -->
 
         <!-- sección de mensajes -->
-        {% if messages %}
-            <div class="container mt-3">
-                {% for message in messages %}
-                <div class="alert alert-danger" role="alert">
-                    {{ message }}
-                </div>
+        {% if messages %}  <!-- Verifica si hay mensajes (por ejemplo, errores o confirmaciones) -->
+            <div class="container mt-3">  <!-- Contenedor para los mensajes -->
+                {% for message in messages %}  <!-- Itera sobre los mensajes -->
+                    <div class="alert alert-danger" role="alert">  <!-- Muestra cada mensaje como una alerta de error (alert-danger) -->
+                        {{ message }}  <!-- Imprime el mensaje -->
+                    </div>
                 {% endfor %}
             </div>
         {% endif %}
-        <form action="" method="post">
-            {% csrf_token %}
-            <div class="card mx-auto my-5" style="width: 40rem;">
+
+        <!-- Formulario para agregar un nuevo servicio -->
+        <form action="" method="post">  <!-- Acción vacía, lo que significa que el formulario se enviará a la misma URL -->
+            {% csrf_token %}  <!-- Token CSRF para proteger el formulario de ataques -->
+            
+            <div class="card mx-auto my-5" style="width: 40rem;">  <!-- Card centrado con márgenes para el formulario -->
                 <div class="card-body">
-                    <h5 class="card-title">Complete todos los campos</h5>
-                    {{ form | crispy }}
-                    <a class="card-link" href="{% url 'home' %}">Inicio</a>
-                    <a class="card-link" href="{% url 'servicios' %}">Servicios</a>
-                    <button class="btn btn-primary float-end" type="submit">Guardar</button>
+                    <h5 class="card-title">Complete todos los campos</h5>  <!-- Instrucción de completar los campos del formulario -->
+
+                    {{ form | crispy }}  <!-- Renderiza el formulario con el estilo de crispy_forms, que aplica estilos automáticamente -->
+
+                    <!-- Enlaces de navegación -->
+                    <a class="card-link" href="{% url 'home' %}">Inicio</a>  <!-- Enlace a la página principal -->
+                    <a class="card-link" href="{% url 'servicios' %}">Servicios</a>  <!-- Enlace a la página de servicios -->
+
+                    <button class="btn btn-primary float-end" type="submit">Guardar</button>  <!-- Botón para guardar el servicio, alineado a la derecha -->
                 </div>
             </div>
         </form>
     </div>
-{% endblock %}
+
+{% endblock %}  <!-- Fin del bloque de contenido -->

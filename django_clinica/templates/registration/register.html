@@ -1,23 +1,30 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}  <!-- Extiende la plantilla base.html para reutilizar la estructura común de la página -->
 
-{% block content %}
-    {% load crispy_forms_tags %}
-    <div class="container mt-3">
-        <h2>REGISTRO DE USUARIO</h2>
-        <form method="POST" action="">
-            {% csrf_token %}
+{% block content %}  <!-- Inicia el bloque de contenido específico de esta plantilla -->
 
-            <div class="card mx-auto" style="width: 30rem;">
-                <div class="card-body">
-                    <h5 class="card-title">Complete todos los datos</h5>
-                    {{ form | crispy }}
+    {% load crispy_forms_tags %}  <!-- Carga las etiquetas necesarias de crispy-forms para aplicar un mejor estilo al formulario -->
 
-                    <a class="card-link" href="{% url 'home' %}">Inicio</a>
-                    <a class="card-link" href="{% url 'login' %}">Iniciar sesión</a>
+    <div class="container mt-3">  <!-- Contenedor con un margen superior de 3 unidades para espaciar la sección -->
+        <h2>REGISTRO DE USUARIO</h2>  <!-- Título principal de la página -->
 
+        <form method="POST" action="">  <!-- Formulario para registrar un nuevo usuario (método POST para enviar los datos al servidor) -->
+            {% csrf_token %}  <!-- Token CSRF para proteger el formulario contra ataques CSRF -->
+
+            <div class="card mx-auto" style="width: 30rem;">  <!-- Tarjeta centrada con un ancho de 30 rem para el formulario -->
+                <div class="card-body">  <!-- Cuerpo de la tarjeta -->
+                    <h5 class="card-title">Complete todos los datos</h5>  <!-- Subtítulo que indica que el usuario debe completar todos los datos -->
+
+                    {{ form | crispy }}  <!-- Aplica el filtro crispy para mejorar la apariencia de los campos del formulario -->
+
+                    <!-- Enlaces de navegación para volver a la página de inicio o iniciar sesión -->
+                    <a class="card-link" href="{% url 'home' %}">Inicio</a>  
+                    <a class="card-link" href="{% url 'login' %}">Iniciar sesión</a>  
+
+                    <!-- Botón para enviar el formulario y registrar el nuevo usuario, alineado a la derecha -->
                     <button class="btn btn-sm btn-primary float-end" type="submit">Registrarse</button>
                 </div>
             </div>
         </form>
     </div>
-{% endblock %}
+
+{% endblock %}  <!-- Finaliza el bloque de contenido específico de esta plantilla -->

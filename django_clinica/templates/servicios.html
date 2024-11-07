@@ -2,6 +2,7 @@
 
 {% block content %}
     <div class="container my-4">
+        <!-- Título y botón de agregar servicio (solo visible para administradores y ejecutivos) -->
         <div class="row">
             <div class="col">
                 <h2>Nuestros Servicios</h2>
@@ -17,7 +18,7 @@
 
         <hr>
 
-        <!-- sección de mensajes -->
+        <!-- Sección para mostrar mensajes de éxito -->
         {% if messages %}
             <div class="container mt-3">
                 {% for message in messages %}
@@ -28,22 +29,30 @@
             </div>
         {% endif %}
 
+        <!-- Sección de servicios -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 my-4">
             {% for servicio in servicios %}
                 <div class="col">
                     <div class="card">
                         <div class="card-body">
+                            <!-- Nombre y descripción del servicio -->
                             <h5 class="card-title">{{ servicio.name }}</h5>
                             <p class="card-text">{{ servicio.description }}</p>
+                            
+                            <!-- Información del profesional que ofrece el servicio -->
                             <p class="card-text">
                                 <strong>Profesional: </strong>{{ servicio.profesional.first_name }} {{ servicio.profesional.last_name }}
                             </p>
+                            
+                            <!-- Información sobre la cantidad de procedimientos del servicio -->
                             <p class="card-text"><strong>Cantidad de procedimientos: </strong>{{ servicio.n_procedimientos }}</p>
 
+                            <!-- Información sobre la cantidad de solicitantes del servicio (visible solo para administradores, ejecutivos y profesionales) -->
                             {% if group_name == 'administradores' or group_name == 'ejecutivos' or group_name == 'profesionales' %}
                                 <p class="card-text"><strong>Cantidad de solicitantes: </strong>{{ servicio.enrollment_count }}</p>
                             {% endif %}
 
+                            <!-- Estado del servicio: Finalizado, En progreso, o Disponible -->
                             {% if servicio.status == 'F' %}
                                 <h5><span class="badge bg-danger w-100">{{ servicio.get_status_display|upper }}</span></h5>
                                 {% if servicio.is_enrolled %}
@@ -57,13 +66,12 @@
                             {% elif servicio.status == 'S' %}
                                 <h5><span class="badge bg-success w-100">{{ servicio.get_status_display|upper }}</span></h5>
 
+                                <!-- Opción para solicitar el servicio si el usuario es un cliente y no está inscrito aún -->
                                 {% if user.is_authenticated %}
                                     {% if group_name == 'clientes' %}
                                         {% if not servicio.is_enrolled %}
-                                            <!-- Botón para solicitar el servicio si no está inscrito -->
                                             <a class="btn btn-sm btn-success" href="#">Solicitar Servicio</a>
                                         {% else %}
-                                            <!-- Mensaje que indica que ya está inscrito o que la solicitud está en curso -->
                                             <p class="text-success"><strong>Solicitud en curso o servicio ya inscrito</strong></p>
                                         {% endif %}
                                     {% endif %}
@@ -72,6 +80,7 @@
                                 {% endif %}
                             {% endif %}
                             
+                            <!-- Opciones para editar o eliminar el servicio (solo visible para administradores y ejecutivos) -->
                             {% if group_name == 'administradores' or group_name == 'ejecutivos' %}
                                 <a class="btn btn-sm btn-warning" href="#">Editar</a>
                                 <a class="btn btn-sm btn-danger" href="#">Eliminar</a>

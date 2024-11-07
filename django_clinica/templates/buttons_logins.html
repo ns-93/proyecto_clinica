@@ -1,13 +1,20 @@
 
 
-<div class="text-center mt-3">
-    {% if user.is_authenticated %}
-        <form action="{% url 'logout' %}" method="post" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-lg btn-danger">Cerrar Sesión</button>
+<div class="text-center mt-3">  <!-- Contenedor con alineación centrada y margen superior -->
+
+    {% if user.is_authenticated %}  <!-- Verifica si el usuario está autenticado (logueado) -->
+    
+        <form action="{% url 'logout' %}" method="post" style="display: inline;">  <!-- Formulario para cerrar sesión -->
+            {% csrf_token %}  <!-- Token CSRF para seguridad en el formulario -->
+            <button type="submit" class="btn btn-lg btn-danger">Cerrar Sesión</button>  <!-- Botón para cerrar sesión con un estilo de fondo rojo (peligro) -->
         </form>
-    {% else %}
-        <a class="btn btn-lg btn-primary" href="{% url 'login' %}">Iniciar Sesión</a>
-        <a class="btn btn-lg btn-warning" href="{% url 'register' %}">Registrarse</a>
-    {% endif %}
+    
+    {% else %}  <!-- Si el usuario no está autenticado -->
+    
+        <a class="btn btn-lg btn-primary" href="{% url 'login' %}">Iniciar Sesión</a>  <!-- Enlace a la página de inicio de sesión con un botón de color azul -->
+        <a class="btn btn-lg btn-warning" href="{% url 'register' %}">Registrarse</a>  <!-- Enlace a la página de registro con un botón de color amarillo -->
+    
+    {% endif %}  <!-- Fin de la verificación de autenticación -->
+    
 </div>
+

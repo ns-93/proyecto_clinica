@@ -1,37 +1,43 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %}  <!-- Extiende la plantilla base, heredando la estructura común del sitio web -->
 
-{% block content %}
+{% block content %}  <!-- Bloque que reemplaza el contenido principal dentro del bloque 'content' de base.html -->
 
-    <div class="container">
-        <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
-            <h1 class="display-4 fw-normal text-body-emphasis">Ofertas DentalArt</h1>
+    <div class="container">  <!-- Contenedor para envolver todo el contenido de la página de precios -->
+
+        <div class="pricing-header p-3 pb-md-4 mx-auto text-center">  <!-- Encabezado de la sección de precios con padding y centrado -->
+            <h1 class="display-4 fw-normal text-body-emphasis">Ofertas Dental Knights</h1>  <!-- Título destacado de la página -->
             <p class="fs-5 text-body-secondary">
-                Descubre nuestras exclusivas opciones de tratamientos para el cuidado de tu sonrisa. En DentalArt, creemos que cada sonrisa es una obra maestra, y por eso te invitamos a aprovechar nuestras ofertas mensuales especialmente seleccionadas para ti.
-            </p>
-            
+                "Descubre nuestras exclusivas opciones de tratamientos para el cuidado de tu sonrisa. En Dental Knights, creemos que cada sonrisa merece ser protegida. Te invitamos a aprovechar nuestras ofertas mensuales, especialmente seleccionadas para ti. ¡Protege tu sonrisa con nosotros!"
+            </p>  <!-- Descripción que invita a explorar las ofertas -->
+
         </div>
 
         <main>
-            <div class="row row-cols-1 row-cols-md-4 mb-3 text-center">
+            <!-- Filas y columnas de los diferentes planes de precios -->
+            <div class="row row-cols-1 row-cols-md-4 mb-3 text-center">  <!-- Fila para 4 columnas (diferentes servicios) con texto centrado -->
+
+                <!-- Primer servicio: Blanqueamiento Dental -->
                 <div class="col">
-                    <div class="card mb-4 rounded-3 shadow-sm border-primary">
-                        <div class="card-header py-3 text-bg-primary border-primary">
-                            <h4 class="my-0 fw-normal">Blanqueamiento Dental</h4>
+                    <div class="card mb-4 rounded-3 shadow-sm border-primary">  <!-- Tarjeta de servicio con bordes y sombra -->
+                        <div class="card-header py-3 text-bg-primary border-primary">  <!-- Encabezado con fondo azul -->
+                            <h4 class="my-0 fw-normal">Blanqueamiento Dental</h4>  <!-- Título del servicio -->
                         </div>
                         <div class="card-body">
-                            <h1 class="card-title pricing-card-title">$50,000<small class="text-body-secondary fw-light"> CLP</small></h1>
-                            <ul class="list-unstyled mt-3 mb-4">
+                            <h1 class="card-title pricing-card-title">$50,000<small class="text-body-secondary fw-light"> CLP</small></h1>  <!-- Precio en formato destacado -->
+                            <ul class="list-unstyled mt-3 mb-4">  <!-- Lista de características del servicio -->
                                 <li>Sesión de blanqueamiento</li>
                                 <li>Asesoría personalizada</li>
                                 <li>Resultados visibles</li>
                                 <li>Incluye revisión inicial</li>
                             </ul>
-                            <button type="button" class="w-100 btn btn-lg btn-outline-primary">Reservar ahora</button>
+                            <button type="button" class="w-100 btn btn-lg btn-outline-primary">Reservar ahora</button>  <!-- Botón para reservar -->
                         </div>
                     </div>
                 </div>
+
+                <!-- Segundo servicio: Limpieza Dental -->
                 <div class="col">
-                    <div class="card mb-4 rounded-3 shadow-sm border-primary">
+                    <div class="card mb-4 rounded-3 shadow-sm border-primary">  <!-- Tarjeta para otro servicio -->
                         <div class="card-header py-3 text-bg-primary border-primary">
                             <h4 class="my-0 fw-normal">Limpieza Dental</h4>
                         </div>
@@ -47,6 +53,8 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tercer servicio: Consulta General -->
                 <div class="col">
                     <div class="card mb-4 rounded-3 shadow-sm border-primary">
                         <div class="card-header py-3 text-bg-primary border-primary">
@@ -64,6 +72,8 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Cuarto servicio: Limpieza + Blanqueamiento -->
                 <div class="col">
                     <div class="card mb-4 rounded-3 shadow-sm border-primary">
                         <div class="card-header py-3 text-bg-primary border-primary">
@@ -81,8 +91,12 @@
                         </div>
                     </div>
                 </div>
-            </div>
+
+            </div>  <!-- Fin de las filas y columnas de servicios -->
         </main>
+
+        <!-- Incluir botones de inicio de sesión/registro desde un archivo parcial -->
         {% include 'buttons_logins.html' %}
-    </div>
-{% endblock %}
+
+    </div>  <!-- Fin del contenedor principal -->
+{% endblock %}  <!-- Fin del bloque content, que será insertado en base.html -->
