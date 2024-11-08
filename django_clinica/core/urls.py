@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView
 from django.contrib.auth.decorators import login_required
 
 # Definición de las rutas o URLs para la aplicación
@@ -25,6 +25,12 @@ urlpatterns = [
     path('servicios/<int:pk>/edit/', login_required(ServicioEditView.as_view()), name='editar_servicios'),
     # Definimos la URL para la eliminación de un servicio específico.
     path('servicios/<int:pk>/delete/', login_required(ServicioDeleteView.as_view()), name='eliminar_servicios'),
+    #Define una ruta URL para la inscripción de un servicio, con un parámetro dinámico 'servicio_id' de tipo entero
+    path('inscribir-servicio/<int:servicio_id>/', ServicioEnrollmentView.as_view(), name='inscribir_servicio'),
+    # Define la URL que apunta a la vista ServiciosListView, pasando un parámetro service_id para identificar el servicio específico, con el nombre de ruta 'servicios_list'.
+    path('servicios/<int:service_id>/', ServiciosListView.as_view(), name='servicios_list'),
+    
+
 
 
 ]

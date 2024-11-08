@@ -70,7 +70,7 @@
                                 {% if user.is_authenticated %}
                                     {% if group_name == 'clientes' %}
                                         {% if not servicio.is_enrolled %}
-                                            <a class="btn btn-sm btn-success" href="#">Solicitar Servicio</a>
+                                            <a class="btn btn-sm btn-success" href="{% url 'inscribir_servicio' servicio.id %}">Solicitar Servicio</a>
                                         {% else %}
                                             <p class="text-success"><strong>Solicitud en curso o servicio ya inscrito</strong></p>
                                         {% endif %}

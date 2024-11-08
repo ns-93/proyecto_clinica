@@ -1,0 +1,85 @@
+<h5>SERVICIOS ASIGNADOS</h5>
+
+<!-- Servicios en progreso -->
+<div class="card text-bg-warning shadow mt-3 mb-3">
+    <div class="card-header">SERVICIOS EN PROGRESO</div>
+    <div class="card-body">
+        {% if progress_services %}  <!-- Verifica si existen servicios en progreso -->
+            <ul class="list-group">
+                {% for service in progress_services %}
+                    {% with enrollment_count=service.registroservicio_set.count %} <!-- Cuenta las solicitudes de servicio asociadas -->
+                        <li class="list-group-item list-group-item-warning">
+                            {{ service.name }} <!-- Nombre del servicio -->
+                            <a href="{% url 'servicios_list' service.id %}" class="btn btn-sm btn-warning float-end"><!-- Enlace a la vista de detalle del servicio -->
+                                {% if service.status == 'P' %} <!-- Verifica si el estado es 'En progreso' -->
+                                    Agregar Datos
+                                {% endif %}
+                                <span class="badge rounded-pill bg-light text-danger">{{ enrollment_count }}</span>  <!-- Muestra la cantidad de solicitudes -->
+                            </a>
+                        </li>
+                    {% endwith %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-warning" role="alert">
+                No tiene Servicios en progreso asignados hasta el momento
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Servicios en estado de inscripción -->
+<div class="card text-bg-success shadow mb-3">
+    <div class="card-header">SOLICITUD DE SERVICIOS</div>
+    <div class="card-body">
+        {% if inscription_services %}  <!-- Verifica si existen servicios en estado de inscripción -->
+            <ul class="list-group">
+                {% for service in inscription_services %}
+                    {% with enrollment_count=service.registroservicio_set.count %} <!-- Cuenta las solicitudes de servicio asociadas -->
+                        <li class="list-group-item list-group-item-success">
+                            {{ service.name }} <!-- Nombre del servicio -->
+                            <a href="{% url 'servicios_list' service.id %}" class="btn btn-sm btn-success float-end"><!-- Enlace a la vista de detalle del servicio -->
+                                {% if service.status == 'S' %} <!-- Verifica si el estado es 'Solicitud de servicio' -->
+                                    Consultar listado
+                                {% endif %}
+                                <span class="badge rounded-pill bg-light text-danger">{{ enrollment_count }}</span>  <!-- Muestra la cantidad de solicitudes -->
+                            </a>
+                        </li>
+                    {% endwith %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-success" role="alert">
+                No tiene Solicitud de Servicios actualmente
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Servicios finalizados -->
+<div class="card text-bg-danger shadow mb-3">
+    <div class="card-header">SERVICIOS FINALIZADOS</div>
+    <div class="card-body">
+        {% if finalized_services %}  <!-- Verifica si existen servicios finalizados -->
+            <ul class="list-group">
+                {% for service in finalized_services %}
+                    {% with enrollment_count=service.registroservicio_set.count %} <!-- Cuenta las solicitudes de servicio asociadas -->
+                        <li class="list-group-item list-group-item-danger">
+                            {{ service.name }} <!-- Nombre del servicio -->
+                            <a href="{% url 'servicios_list' service.id %}" class="btn btn-sm btn-danger float-end"><!-- Enlace a la vista de detalle del servicio -->
+                                {% if service.status == 'F' %} <!-- Verifica si el estado es 'Finalizado' -->
+                                    Consultar listado
+                                {% endif %}
+                                <span class="badge rounded-pill bg-light text-danger">{{ enrollment_count }}</span>  <!-- Muestra la cantidad de solicitudes -->
+                            </a>
+                        </li>
+                    {% endwith %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="alert alert-danger" role="alert">
+                No tiene Servicios finalizados asignados hasta el momento
+            </div>
+        {% endif %}
+    </div>
+</div>

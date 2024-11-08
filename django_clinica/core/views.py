@@ -1,10 +1,11 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import Group
 from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm  
 from django.views import View
+from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from .models import Servicios, RegistroServicio
 from django.urls import reverse_lazy
@@ -120,31 +121,74 @@ class ProfileView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        # Agrega los formularios de usuario y perfil al contexto
-        context['user_form']= UserForm(instance=user)
-        context['profile_form']= ProfileForm(instance=user.profile)
         
-        return context     
-    
-    def post(self, request, *arg, **kwargs):
-        # Procesa los formularios de perfil y usuario
+        # Agrega los formularios de usuario y perfil al contexto
+        context['user_form'] = UserForm(instance=user)  # Formulario del usuario
+        context['profile_form'] = ProfileForm(instance=user.profile)  # Formulario del perfil
+
+        # Se ajusta para manejar diferentes grupos de usuarios
+        if user.groups.filter(name='profesionales').exists():
+            # Obtener todos los servicios asignados al profesional
+            assigned_services = Servicios.objects.filter(profesional=user).order_by('-id')
+            inscription_services = assigned_services.filter(status='S')  # Servicios solicitados
+            progress_services = assigned_services.filter(status='P')  # Servicios en progreso
+            finalized_services = assigned_services.filter(status='F')  # Servicios finalizados
+            context['inscription_services'] = inscription_services
+            context['progress_services'] = progress_services
+            context['finalized_services'] = finalized_services
+
+        elif user.groups.filter(name='clientes').exists():
+            # Obtener todos los servicios donde el cliente está inscrito
+            registrations = RegistroServicio.objects.filter(cliente=user)
+            enrolled_services = []
+            inscription_services = []
+            progress_services = []
+            finalized_services = []
+
+            for registration in registrations:
+                service = registration.servicio
+                enrolled_services.append(service)
+
+                if service.status == 'S':
+                    inscription_services.append(service)  # Servicios solicitados
+                elif service.status == 'P':
+                    progress_services.append(service)  # Servicios en progreso
+                elif service.status == 'F':
+                    finalized_services.append(service)  # Servicios finalizados
+
+            context['enrolled_services'] = enrolled_services
+            context['inscription_services'] = inscription_services
+            context['progress_services'] = progress_services
+            context['finalized_services'] = finalized_services
+
+        elif user.groups.filter(name='administradores').exists() or user.groups.filter(name='ejecutivos').exists():
+            # Obtener todos los servicios disponibles para los administradores y ejecutivos
+            all_services = Servicios.objects.all()
+            inscription_services = all_services.filter(status='S')  # Servicios solicitados
+            progress_services = all_services.filter(status='P')  # Servicios en progreso
+            finalized_services = all_services.filter(status='F')  # Servicios finalizados
+            context['inscription_services'] = inscription_services
+            context['progress_services'] = progress_services
+            context['finalized_services'] = finalized_services
+        
+        return context
+
+    def post(self, request, *args, **kwargs):
         user = self.request.user
         user_form = UserForm(request.POST, instance=user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=user.profile)
 
-        #si los datos son validos
+        # Procesa los formularios de perfil y usuario
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()  # Guarda el formulario de usuario
             profile_form.save()  # Guarda el formulario de perfil
+            return redirect('profile')  # Redirige al perfil del usuario
 
-            return redirect('profile') # Redirige al perfil del usuario
-        
-        #si los datos no son validos
+        # Si los datos no son válidos, vuelve a mostrar el formulario con los errores
         context = self.get_context_data()
-        context ['user_form'] = user_form
-        context ['profile_form'] = profile_form
+        context['user_form'] = user_form
+        context['profile_form'] = profile_form
         return render(request, 'profile/profile.html', context)
-
 
 # MOSTRAR TODOS LOS servicios
 # VISTA DE TODOS LOS SERVICIOS DISPONIBLES
@@ -249,7 +293,7 @@ class ServicioEditView(UserPassesTestMixin, UpdateView):
         # Renderiza la respuesta con el contexto actual del formulario
         return self.render_to_response(self.get_context_data(form=form))
     
-
+#hasta qui la edicion del servicio ya creado
 
 @add_group_name_to_context
 class ServicioDeleteView(UserPassesTestMixin, DeleteView):
@@ -275,4 +319,84 @@ class ServicioDeleteView(UserPassesTestMixin, DeleteView):
         messages.success(self.request, 'El registro se ha eliminado correctamente')
         # Llama al método original form_valid() para continuar el proceso de eliminación
         return super().form_valid(form)
+
+#hasta aqui la eliminacion de un servicio ya creado
+
+#solicitud de un servicio o ingreso a un servicio creado
+# Vista para gestionar la inscripción de un cliente en un servicio
+@add_group_name_to_context
+class ServicioEnrollmentView(View):
+    # Método GET para manejar la inscripción de un cliente en un servicio
+    def get(self, request, servicio_id):
+        # Buscar el servicio usando el ID proporcionado, si no lo encontramos, lanza un 404
+        servicio = get_object_or_404(Servicios, id=servicio_id)
+
+        # Verificamos si el usuario está autenticado y pertenece al grupo 'clientes'
+        if request.user.is_authenticated and request.user.groups.filter(name='clientes').exists():
+            cliente = request.user  # Obtenemos al cliente (usuario actual)
+
+            # Verifica si ya existe una inscripción para el cliente en este servicio
+            existing_registration = RegistroServicio.objects.filter(servicio=servicio, cliente=cliente).first()
+
+            if existing_registration:
+                messages.warning(request, 'Ya has solicitado este servicio.')
+            else:
+                # Crear un registro de inscripción para el cliente y el servicio
+                registro = RegistroServicio(servicio=servicio, cliente=cliente)
+                registro.save()  # Guardamos el registro en la base de datos
+
+                messages.success(request, 'Se a solicitado correctamente este servicio Gracias')
+        else:
+            # Si no está autenticado o no pertenece al grupo adecuado, mostramos un mensaje de error
+            messages.error(request, 'No se pudo completar la Solicitud. Debes ser un cliente para Solicitar este servicio.')
+
+        # Redirige al usuario a la lista de servicios
+        return redirect('servicios')  # Redirige a la vista de servicios
+
+#hasta aqui el enrolamiento o anotacion de un servicio
+
+
+
+# MOSTRAR LISTA DE CLIENTES Y SERVICIOS A LOS PROFESIONALES
+# Vista para mostrar la lista de registros de servicio y clientes asociados.
+@add_group_name_to_context
+class ServiciosListView(TemplateView):
+    template_name = 'servicios_list.html'
+
+    def get_context_data(self, **kwargs):
+        # Se obtiene el contexto base desde la clase TemplateView
+        context = super().get_context_data(**kwargs)
+        
+        # Se obtiene el ID del servicio desde los parámetros de la URL
+        service_id = self.kwargs['service_id']
+        
+        # Buscamos el servicio en la base de datos usando el ID
+        servicio = get_object_or_404(Servicios, id=service_id)
+        
+        # Filtramos los registros de servicio asociados al servicio específico
+        registros_servicio = RegistroServicio.objects.filter(servicio=servicio)
+
+        # Lista para almacenar los datos de cada cliente asociado al servicio
+        client_data = []
+        for registro in registros_servicio:
+            # Buscamos al cliente relacionado con cada registro
+            cliente = get_object_or_404(User, id=registro.cliente.id)  # Acceso correcto al cliente
+            
+            # Se almacenan los datos de cada cliente en un diccionario
+            client_data.append({
+                'registro_id': registro.id,
+                'nombre': cliente.get_full_name(),
+                'observacion': registro.observacion,  # Observación relacionada al cliente
+                'archivo': registro.archivo.url if registro.archivo else None,  # URL del archivo si existe
+                'odontograma': registro.odontograma.url if registro.odontograma else None,  # URL del odontograma si existe
+            })
+
+        # Se agrega la información del servicio y los datos de los clientes al contexto
+        context['servicio'] = servicio
+        context['client_data'] = client_data
+        
+        # Se devuelve el contexto para que sea utilizado en la plantilla
+        return context
+
+#hasta aqui la lista de servicios y clientes
 

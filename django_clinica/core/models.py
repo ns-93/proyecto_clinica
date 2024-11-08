@@ -42,20 +42,36 @@ class Servicios(models.Model):
 #solicitud de servicio o registro de servicio
 # Modelo para registrar solicitudes de servicios por parte de los clientes
 class RegistroServicio(models.Model):
-    # Servicio solicitado por el cliente
-    servicio = models.ForeignKey( Servicios, on_delete=models.CASCADE, verbose_name= 'Servicio')
-    # Cliente que solicita el servicio, limitado al grupo "clientes"
-    cliente = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cliente_registrado' ,limit_choices_to={'groups__name':'clientes'},verbose_name='cliente')
-    # Campo para indicar si el servicio solicitado está habilitado
+    # Relación con el modelo Servicios, indica el servicio que se solicita
+    servicio = models.ForeignKey(Servicios, on_delete=models.CASCADE, verbose_name='Servicio')
+    
+    # Relación con el modelo User, limitado al grupo "clientes", indica qué cliente solicita el servicio
+    cliente = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,  # Si el cliente se elimina, también se elimina la solicitud
+        related_name='cliente_registrado',  # Relaciona la solicitud con el cliente
+        limit_choices_to={'groups__name': 'clientes'},  # Limita los clientes a aquellos que están en el grupo "clientes"
+        verbose_name='cliente'
+    )
+    
+    # Campo booleano que indica si la solicitud de servicio está habilitada o no
     enabled = models.BooleanField(default=True, verbose_name='Habilitado')
+    
+    # Nuevo campo de observación para que el cliente o profesional pueda agregar notas adicionales a la solicitud
+    observacion = models.TextField(null=True, blank=True, verbose_name='Observación')
+    archivo = models.FileField(upload_to='archivos/', null=True, blank=True)
+    odontograma = models.ImageField(upload_to='odontogramas/', null=True, blank=True)
 
-# Muestra cliente y servicio en la representación
+    # Método para representar la solicitud en formato de texto, mostrando el nombre de usuario del cliente y el servicio
     def __str__(self):
         return f'{self.cliente.username} - {self.servicio}'
-    
+
+    # Configuración adicional para el modelo en el administrador de Django
     class Meta:
-        verbose_name= 'solicitud de servicio'
-        verbose_name_plural= 'solicitudes de servicios'
+        # Nombre en singular para el modelo
+        verbose_name = 'solicitud de servicio'
+        # Nombre plural para el modelo
+        verbose_name_plural = 'solicitudes de servicios'
 
 #hasta aqui el registro o solicitudes de servicio        
 
@@ -87,7 +103,7 @@ class Asistencia(models.Model):
 
 #aqui realizaremo una clase que nos premitira agregar documentos y observaciones para nuetro cliente en su procedimiento solicitado
 # Modelo para almacenar información adicional del cliente relacionada con el servicio
-class infocliente(models.Model):
+class Infocliente(models.Model):
     # Servicio asociado a la información del cliente
     servicio = models.ForeignKey(Servicios, on_delete=models.CASCADE, verbose_name='Servicio')
     # Cliente para el que se registra la información, limitado al grupo "clientes"
@@ -97,7 +113,7 @@ class infocliente(models.Model):
     observacion = models.TextField(null=True, blank=True, verbose_name='Observación')
     
     # Campo para que el profesional suba una Imagen relacionada con el servicio, como un documento visual adicional
-    imagen = models.ImageField(upload_to='imagenes/', null=True, blank=True, verbose_name='Imagen')
+    archivo = models.FileField(upload_to='archivos/', null=True, blank=True, verbose_name='Archivo')
     
     # Archivo odontograma para registros dentales específicos del cliente
     odontograma = models.FileField(upload_to='odontogramas/', null=True, blank=True, verbose_name='Odontograma')

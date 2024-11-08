@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Servicios, RegistroServicio, Asistencia, infocliente
+from .models import Servicios, RegistroServicio, Asistencia, Infocliente
 
 # Register your models here.
 #registramos la clase servicios admin y como se listara
@@ -35,12 +35,11 @@ admin.site.register(Asistencia, AsistenciaAdmin)
 
 #para la info cliente
 # Configuración de la administración para el modelo Infocliente
-
 class InfoclienteAdmin(admin.ModelAdmin):
     # Define las columnas que se mostrarán en la lista de objetos Infocliente
-    list_display = ('servicio', 'cliente', 'observacion', 'imagen', 'odontograma')
+    list_display = ('servicio', 'cliente', 'observacion', 'archivo', 'odontograma')
     # Añade una barra de búsqueda que permite buscar por nombre de usuario del cliente y nombre del servicio
-    search_fields = ('cliente__username', 'servicio__nombre') 
+    search_fields = ('cliente__username', 'servicio__nombre')
     # Añade un filtro lateral para buscar por el campo 'servicio'
     list_filter = ('servicio',)
     # Define el orden de los objetos por el campo 'cliente'
@@ -51,10 +50,10 @@ class InfoclienteAdmin(admin.ModelAdmin):
             'fields': ('servicio', 'cliente', 'observacion')
         }),
         ('Archivos', {
-            'fields': ('imagen', 'odontograma')
+            'fields': ('archivo', 'odontograma')
         }),
     )
-# Registra el modelo Infocliente en el panel de administración con la configuración personalizada
-admin.site.register(infocliente, InfoclienteAdmin)
 
-#
+# Registra el modelo Infocliente en el panel de administración con la configuración personalizada
+admin.site.register(Infocliente, InfoclienteAdmin)
+
