@@ -372,12 +372,13 @@ class ServiciosListView(TemplateView):
         client_data = []
         for registro in registros_servicio:
             cliente = get_object_or_404(User, id=registro.cliente_id)
+            infocliente = Infocliente.objects.filter(servicio=servicio, cliente=cliente).first()
             client_data.append({
-                'registro_id': registro.id,
+                'registro_id': infocliente.id if infocliente else None,
                 'nombre': cliente.get_full_name(),
-                'observacion': registro.observacion if registro.observacion else '',
-                'archivo': registro.archivo.url if registro.archivo else None,
-                'odontograma': registro.odontograma.url if registro.odontograma else None,
+                'observacion': infocliente.observacion if infocliente and infocliente.observacion else '',
+                'archivo': infocliente.archivo.url if infocliente and infocliente.archivo else None,
+                'odontograma': infocliente.odontograma.url if infocliente and infocliente.odontograma else None,
             })
 
         context['servicio'] = servicio
