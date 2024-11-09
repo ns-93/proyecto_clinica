@@ -1,5 +1,9 @@
+
 from django.contrib import admin
+from django.db import models  
+from django.forms import Textarea
 from .models import Servicios, RegistroServicio, Asistencia, Infocliente
+
 
 # Register your models here.
 #registramos la clase servicios admin y como se listara

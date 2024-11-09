@@ -2,19 +2,16 @@
 
 {% block content %}
     <div class="container mt-3">
-        <!-- Título que incluye el nombre del servicio -->
         <h2>Detalles del Servicio - <strong>{{ servicio }}</strong>
-            <!-- Etiquetas de estado del servicio basadas en la observación -->
-            {% if servicio.observacion == 'S' %}
+            {% if servicio.status == 'S' %}
                 <span class="badge bg-success float-end">EN ETAPA DE SOLICITUD</span>
-            {% elif servicio.observacion == 'P' %}
+            {% elif servicio.status == 'P' %}
                 <span class="badge bg-warning text-dark float-end">EN PROGRESO</span>
-            {% elif servicio.observacion == 'F' %}
+            {% elif servicio.status == 'F' %}
                 <span class="badge bg-danger float-end">FINALIZADO</span>
             {% endif %}
         </h2>
 
-        <!-- Tabla de clientes con detalles del servicio -->
         <table class="table">
             <thead>
             <tr>
@@ -28,10 +25,15 @@
             <tbody>
             {% for data in client_data %}
                 <tr>
-                    <td>{{ data.nombre }}</td> <!-- Mostrando el nombre completo del cliente -->
-                    <td>{{ data.observacion }}</td>
+                    <td>{{ data.nombre }}</td>
                     <td>
-                        <!-- Muestra el enlace del archivo si está disponible -->
+                        {% if data.observacion %}
+                            {{ data.observacion }}
+                        {% else %}
+                            Sin observaciones
+                        {% endif %}
+                    </td>
+                    <td>
                         {% if data.archivo %}
                             <a href="{{ data.archivo }}" target="_blank">Ver Archivo</a>
                         {% else %}
@@ -39,7 +41,6 @@
                         {% endif %}
                     </td>
                     <td>
-                        <!-- Muestra el enlace del odontograma si está disponible -->
                         {% if data.odontograma %}
                             <a href="{{ data.odontograma }}" target="_blank">Ver Odontograma</a>
                         {% else %}
@@ -47,10 +48,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        <!-- Botón para agregar observación habilitado solo en estado "EN PROGRESO" -->
-                        <a class="btn btn-sm btn-primary {% if servicio.observacion == 'S' or servicio.observacion == 'F' %}disabled{% endif %}" href="">
-							Agregar Observación
-						</a><!--agregar url y otro botones de ser necesario odontograma y archivos -->
+                        <a class="btn btn-sm btn-primary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="">
+                            Agregar Observación
+                        </a>
                     </td>
                 </tr>
             {% endfor %}
