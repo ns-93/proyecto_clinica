@@ -11,7 +11,7 @@ class Profile(models.Model):
     # Relación uno a uno con el modelo de usuario de Django, eliminando el perfil si se elimina el usuario
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', verbose_name='Usuario')
     # Campo de imagen para el perfil de usuario; almacena la imagen en la carpeta 'users/' y usa una imagen por defecto si no se carga ninguna
-    image = models.ImageField(default='usuario_defecto.jpg', upload_to='users/', verbose_name='Imagen de perfil')
+    image = models.ImageField(default='users/usuario_defecto.jpg', upload_to='users/', verbose_name='Imagen de perfil')
     # Campos de texto para la dirección del usuario, localidad y telefono; es opcional
     address = models.CharField(max_length=150, null=True, blank=True, verbose_name='Direccion')
     location = models.CharField(max_length=100, null=True, blank=True, verbose_name='Localidad')

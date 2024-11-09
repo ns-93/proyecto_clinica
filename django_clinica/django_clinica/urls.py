@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
+from django.conf.urls.static import static
 
 # Definición de las rutas de URL del proyecto.
 urlpatterns = [
@@ -37,7 +38,6 @@ urlpatterns = [
 # Esto permite servir archivos multimedia (como imágenes) durante el desarrollo.
 if settings.DEBUG:
     # Importamos la función para manejar archivos estáticos en el entorno de desarrollo.
-    from django.conf.urls.static import static
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     # Añadimos una ruta para servir archivos multimedia, 
     # basada en la configuración MEDIA_URL y MEDIA_ROOT en el archivo settings.py.

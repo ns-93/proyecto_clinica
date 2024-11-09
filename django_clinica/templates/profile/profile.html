@@ -1,5 +1,6 @@
-{% extends 'base.html' %}  <!-- Extiende la plantilla base.html, heredando su estructura general -->
 
+{% extends 'base.html' %}  <!-- Extiende la plantilla base.html, heredando su estructura general -->
+{% load static %}
 {% block content %}  <!-- Inicia el bloque de contenido específico para esta plantilla -->
 
     <div class="container my-3">  <!-- Contenedor principal con un margen superior -->
@@ -9,7 +10,11 @@
                 <div class="card border rounded-2 shadow p-3 mb-3">  <!-- Tarjeta de perfil con borde, sombra y padding -->
                     <div class="card-body">  <!-- Cuerpo de la tarjeta donde se coloca la información -->
                         <div class="text-center">  <!-- Centra la imagen de perfil -->
-                            <img class="img-thumbnail rounded-circle mb-3" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 150px;">  <!-- Imagen de perfil del usuario -->
+                            {% if user.profile.image %}
+                                <img class="img-thumbnail rounded-circle mb-3" src="{{ user.profile.image.url }}" alt="{{ user.username }}" style="width: 150px;">
+                            {% else %}
+                                <img class="img-thumbnail rounded-circle mb-3" src="{% static 'users/usuario_defecto.jpg' %}" alt="Imagen por defecto" style="width: 150px;">
+                            {% endif %} <!-- Imagen de perfil del usuario -->
                         </div>
                         <h2>{{ user.first_name }} {{ user.last_name }}</h2>  <!-- Nombre completo del usuario -->
                         <hr>  <!-- Línea horizontal para separar las secciones -->
