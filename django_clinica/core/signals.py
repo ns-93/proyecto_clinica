@@ -8,13 +8,12 @@ def create_client_info(sender, instance, created, **kwargs):
     # Verifica si se creó un nuevo registro de servicio
     if created:
         # Crea un registro en Infocliente para almacenar información adicional del cliente
-        # Aquí se añaden los campos 'archivo' y 'odontograma'
         Infocliente.objects.create(
             servicio=instance.servicio,    # El servicio asociado a la solicitud
             cliente=instance.cliente,      # El cliente que hizo la solicitud
             observacion=None,              # Observación del profesional (puede ser rellenada después)
             archivo=None,                  # Campo para cargar cualquier archivo relacionado (vacío por defecto)
-            odontograma=None              # Archivo odontograma (vacío por defecto)
+            odontograma=None               # Archivo odontograma (vacío por defecto)
         )
 
 @receiver(post_save, sender=RegistroServicio)

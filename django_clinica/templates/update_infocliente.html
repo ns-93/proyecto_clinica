@@ -15,7 +15,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Actualizar Información</h5>
                     <!-- Mostramos el formulario utilizando crispy_forms para un diseño más limpio -->
-                    {{ form | crispy }}
+                    {{ form|crispy }}
 
                     <!-- Botón para guardar los datos -->
                     <button class="btn btn-primary float-end" type="submit">Guardar datos</button>
@@ -27,7 +27,6 @@
         </form>
 
         <script>
-            // Función para volver a la página anterior
             function goBack() {
                 window.history.back();
             }

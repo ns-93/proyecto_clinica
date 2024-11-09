@@ -9,27 +9,24 @@ from django.dispatch import  receiver
 
 # Modelo de servicios con estados
 # Modelo para gestionar servicios y su estado
+
 class Servicios(models.Model):
     # Opciones de estado del servicio
     STATUS_CHOICES = (
-        ('S', 'Solicitud de Servicio'), # Servicio solicitado por el cliente
-        ('P', 'En progreso'),           # Servicio en proceso de realización
-        ('F', 'Finalizado'),            # Servicio completado
+        ('S', 'Solicitud de Servicio'),  # Servicio solicitado por el cliente
+        ('P', 'En progreso'),            # Servicio en proceso de realización
+        ('F', 'Finalizado'),             # Servicio completado
     )
 
-
-    name = models.CharField(max_length=100, verbose_name='Nombre del Servicio') # Nombre del servicio
-    description = models.TextField(blank=True, null=True, verbose_name='Descripción') # Descripción opcional del servicio
-    profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional') # Profesional asignado, relacionado con un usuario del grupo "profesionales"
-    # Número de procedimientos o sesiones asociadas al servicio
-    n_procedimientos = models.PositiveIntegerField(default=0, verbose_name='Número de sesiones') 
-    # Estado del servicio, utilizando las opciones definidas en STATUS_CHOICES
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='S', verbose_name='Estado')
-
+    name = models.CharField(max_length=100, verbose_name='Nombre del Servicio')  # Nombre del servicio
+    description = models.TextField(blank=True, null=True, verbose_name='Descripción')  # Descripción opcional del servicio
+    profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional')  # Profesional asignado, relacionado con un usuario del grupo "profesionales"
+    n_procedimientos = models.PositiveIntegerField(default=0, verbose_name='Número de sesiones')  # Número de procedimientos o sesiones asociadas al servicio
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='S', verbose_name='Estado')  # Estado del servicio, utilizando las opciones definidas en STATUS_CHOICES
 
     def __str__(self):
-        return self.name 
-# Representación del servicio como su nombre
+        return self.name  # Representación del servicio como su nombre
+
     class Meta:
         verbose_name = 'servicio'
         verbose_name_plural = 'servicios'
@@ -103,6 +100,7 @@ class Asistencia(models.Model):
 
 #aqui realizaremo una clase que nos premitira agregar documentos y observaciones para nuetro cliente en su procedimiento solicitado
 # Modelo para almacenar información adicional del cliente relacionada con el servicio
+
 class Infocliente(models.Model):
     # Servicio asociado a la información del cliente
     servicio = models.ForeignKey(Servicios, on_delete=models.CASCADE, verbose_name='Servicio')
@@ -118,11 +116,11 @@ class Infocliente(models.Model):
     # Archivo odontograma para registros dentales específicos del cliente
     odontograma = models.FileField(upload_to='odontogramas/', null=True, blank=True, verbose_name='Odontograma')
 
-# Muestra el servicio asociado en la representación
+    # Muestra el servicio asociado en la representación
     def __str__(self):
-        return str(self.servicio)
+        return f"{self.cliente.username} - {self.servicio.name}"
     
-# Guarda la información en la base de datos
+    # Guarda la información en la base de datos
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 

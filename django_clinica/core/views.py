@@ -8,7 +8,7 @@ from django.views import View
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from .models import Servicios, RegistroServicio, Infocliente
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.conf import settings
@@ -364,86 +364,50 @@ class ServiciosListView(TemplateView):
     template_name = 'servicios_list.html'
 
     def get_context_data(self, **kwargs):
-        # Se obtiene el contexto base desde la clase TemplateView
         context = super().get_context_data(**kwargs)
-        
-        # Se obtiene el ID del servicio desde los parámetros de la URL
-        service_id = self.kwargs['service_id']
-        
-        # Buscamos el servicio en la base de datos usando el ID
-        servicio = get_object_or_404(Servicios, id=service_id)
-        
-        # Filtramos los registros de servicio asociados al servicio específico
+        servicios_id = self.kwargs['servicios_id']
+        servicio = get_object_or_404(Servicios, id=servicios_id)
         registros_servicio = RegistroServicio.objects.filter(servicio=servicio)
 
-        # Lista para almacenar los datos de cada cliente asociado al servicio
         client_data = []
         for registro in registros_servicio:
-            # Buscamos al cliente relacionado con cada registro
             cliente = get_object_or_404(User, id=registro.cliente_id)
-            
-            # Se almacenan los datos de cada cliente en un diccionario
             client_data.append({
                 'registro_id': registro.id,
                 'nombre': cliente.get_full_name(),
-                'observacion': registro.observacion if registro.observacion else '',   # Observación relacionada al cliente
-                'archivo': registro.archivo.url if registro.archivo else None,  # URL del archivo si existe
-                'odontograma': registro.odontograma.url if registro.odontograma else None,  # URL del odontograma si existe
+                'observacion': registro.observacion if registro.observacion else '',
+                'archivo': registro.archivo.url if registro.archivo else None,
+                'odontograma': registro.odontograma.url if registro.odontograma else None,
             })
 
-        # Se agrega la información del servicio y los datos de los clientes al contexto
         context['servicio'] = servicio
-        context['client_data'] = client_data  # Cambiado a 'client_data' para coincidir con la plantilla
-        
-        # Se devuelve el contexto para que sea utilizado en la plantilla
+        context['client_data'] = client_data
         return context
-
 #hasta aqui la lista de servicios y clientes
 
 # Vista basada en clases para actualizar la información de un cliente.
 @add_group_name_to_context
 class UpdateInfoclienteView(UpdateView):
-
-    model = Infocliente  # Modelo de datos que representa la información del cliente.
-    fields = ['observacion', 'archivo', 'odontograma']  # Campos del modelo que se editarán en el formulario.
-    template_name = 'update_infocliente.html'  # Plantilla HTML para el formulario de actualización.
+    model = Infocliente
+    fields = ['observacion', 'archivo', 'odontograma']
+    template_name = 'update_infocliente.html'
 
     def get_success_url(self):
-        """
-        Obtiene la URL de redirección después de una actualización exitosa.
-
-        Redirige a la vista de detalle del servicio, pasando el ID del servicio como argumento.
-        """
-        return reverse_lazy('servicio_detail', kwargs={'servicio_id': self.object.servicio.id})
+        return reverse('servicios_list', kwargs={'servicios_id': self.object.servicio.id})
 
     def form_valid(self, form):
-        """
-        Maneja la validación del formulario.
-
-        Llama al método form_valid de la clase base y luego redirige a la URL de éxito.
-        """
         response = super().form_valid(form)
         return redirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
-        """
-        Obtiene el contexto para la plantilla.
-
-        Agrega el nombre del servicio y el nombre completo del cliente al contexto para mostrarlos en la plantilla.
-        """
         context = super().get_context_data(**kwargs)
         infocliente = self.get_object()
-        context['servicio_name'] = infocliente.servicio.name  # Nombre del servicio relacionado.
-        context['cliente_name'] = infocliente.cliente.nombre_completo  # Nombre completo del cliente.
+        context['servicio_name'] = infocliente.servicio.name
+        context['cliente_name'] = infocliente.cliente.get_full_name()
         return context
 
     def get_object(self, queryset=None):
-        """
-        Obtiene el objeto Infocliente a actualizar.
-
-        Busca el objeto Infocliente correspondiente al ID proporcionado en los argumentos de la URL.
-        """
         infocliente_id = self.kwargs['infocliente_id']
         return get_object_or_404(Infocliente, id=infocliente_id)
     
-
+#hasta aqui la actualizacion de la informacion del cliente

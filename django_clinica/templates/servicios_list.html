@@ -23,16 +23,10 @@
             </tr>
             </thead>
             <tbody>
-            {% for data in client_data %}
+                {% for data in client_data %}
                 <tr>
                     <td>{{ data.nombre }}</td>
-                    <td>
-                        {% if data.observacion %}
-                            {{ data.observacion }}
-                        {% else %}
-                            Sin observaciones
-                        {% endif %}
-                    </td>
+                    <td>{{ data.observacion }}</td>
                     <td>
                         {% if data.archivo %}
                             <a href="{{ data.archivo }}" target="_blank">Ver Archivo</a>
@@ -48,9 +42,13 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a class="btn btn-sm btn-primary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="{% url 'update_info' infocliente_id=servicio.infocliente.id %}">
-                            Agregar Datos
-                        </a>
+                        {% if data.registro_id %}
+                            <a class="btn btn-sm btn-primary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="{% url 'update_info' infocliente_id=data.registro_id %}">
+                                Agregar Datos
+                            </a>
+                        {% else %}
+                            No disponible
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

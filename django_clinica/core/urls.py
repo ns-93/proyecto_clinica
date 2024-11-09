@@ -28,9 +28,10 @@ urlpatterns = [
     #Define una ruta URL para la inscripción de un servicio, con un parámetro dinámico 'servicio_id' de tipo entero
     path('inscribir-servicio/<int:servicio_id>/', ServicioEnrollmentView.as_view(), name='inscribir_servicio'),
     # Define la URL que apunta a la vista ServiciosListView, pasando un parámetro service_id para identificar el servicio específico, con el nombre de ruta 'servicios_list'.
-    path('servicios/<int:service_id>/', ServiciosListView.as_view(), name='servicios_list'),
+    path('servicios/<int:servicios_id>/', ServiciosListView.as_view(), name='servicios_list'),
     # URL para actualizar la información del cliente
-    path('servicios/update_infocliente/<int:cliente_id>/', UpdateInfoclienteView.as_view(), name='update_info'),
+    path('servicios/update_infocliente/<int:infocliente_id>/', UpdateInfoclienteView.as_view(), name='update_info'),
+    
     
     
 
