@@ -1,1 +1,36 @@
+{% extends 'base.html' %}
 
+{% block content %}
+    {% load crispy_forms_tags %}
+    <div class="container mt-3">
+        <!-- Título de la página que muestra el nombre del servicio relacionado -->
+        <h2>Servicio - <strong>{{ servicio_name }}</strong></h2>
+        <h2>Actualizar Información del Cliente - {{ cliente_name }}</h2>
+
+        <!-- Formulario para actualizar la información del cliente -->
+        <form method="POST" action="" enctype="multipart/form-data">
+            {% csrf_token %}  <!-- Token de seguridad para prevenir ataques CSRF -->
+
+            <div class="card mx-auto" style="width: 30rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Actualizar Información</h5>
+                    <!-- Mostramos el formulario utilizando crispy_forms para un diseño más limpio -->
+                    {{ form | crispy }}
+
+                    <!-- Botón para guardar los datos -->
+                    <button class="btn btn-primary float-end" type="submit">Guardar datos</button>
+
+                    <!-- Botón para volver atrás sin guardar -->
+                    <button class="btn btn-secondary" type="button" onclick="goBack()">Volver</button>
+                </div>
+            </div>
+        </form>
+
+        <script>
+            // Función para volver a la página anterior
+            function goBack() {
+                window.history.back();
+            }
+        </script>
+    </div>
+{% endblock %}

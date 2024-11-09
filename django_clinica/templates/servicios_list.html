@@ -48,8 +48,8 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a class="btn btn-sm btn-primary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="">
-                            Agregar Observación
+                        <a class="btn btn-sm btn-primary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="{% url 'update_info' infocliente_id=servicio.infocliente.id %}">
+                            Agregar Datos
                         </a>
                     </td>
                 </tr>

@@ -400,21 +400,21 @@ class ServiciosListView(TemplateView):
 
 #hasta aqui la lista de servicios y clientes
 
-#Vista basada en clases para actualizar información de un cliente.
+# Vista basada en clases para actualizar la información de un cliente.
 @add_group_name_to_context
 class UpdateInfoclienteView(UpdateView):
 
-    model = Infocliente  # Modelo de datos que representa la información del cliente
-    fields = ['observacion', 'archivo', 'odontograma']  # Campos del modelo a editar en el formulario
-    template_name = 'update_infocliente.html'  # Plantilla HTML para el formulario de actualización
+    model = Infocliente  # Modelo de datos que representa la información del cliente.
+    fields = ['observacion', 'archivo', 'odontograma']  # Campos del modelo que se editarán en el formulario.
+    template_name = 'update_infocliente.html'  # Plantilla HTML para el formulario de actualización.
 
     def get_success_url(self):
         """
         Obtiene la URL de redirección después de una actualización exitosa.
 
-        Redirige a la vista de detalle del cliente, pasando el ID del cliente como argumento.
+        Redirige a la vista de detalle del servicio, pasando el ID del servicio como argumento.
         """
-        return reverse_lazy('cliente_detail', kwargs={'cliente_id': self.object.cliente.id})
+        return reverse_lazy('servicio_detail', kwargs={'servicio_id': self.object.servicio.id})
 
     def form_valid(self, form):
         """
@@ -429,21 +429,21 @@ class UpdateInfoclienteView(UpdateView):
         """
         Obtiene el contexto para la plantilla.
 
-        Agrega el nombre completo del cliente al contexto para mostrarlo en la plantilla.
+        Agrega el nombre del servicio y el nombre completo del cliente al contexto para mostrarlos en la plantilla.
         """
         context = super().get_context_data(**kwargs)
-        cliente = self.get_object()
-        context['cliente_name'] = cliente.cliente.nombre_completo
+        infocliente = self.get_object()
+        context['servicio_name'] = infocliente.servicio.name  # Nombre del servicio relacionado.
+        context['cliente_name'] = infocliente.cliente.nombre_completo  # Nombre completo del cliente.
         return context
 
     def get_object(self, queryset=None):
         """
         Obtiene el objeto Infocliente a actualizar.
 
-        Busca el objeto Infocliente correspondiente al ID del cliente proporcionado en los argumentos de la URL.
+        Busca el objeto Infocliente correspondiente al ID proporcionado en los argumentos de la URL.
         """
-        cliente_id = self.kwargs['cliente_id']
-        return get_object_or_404(Infocliente, id=cliente_id)
+        infocliente_id = self.kwargs['infocliente_id']
+        return get_object_or_404(Infocliente, id=infocliente_id)
     
 
-    
