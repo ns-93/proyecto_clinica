@@ -116,6 +116,7 @@ class RegisterView(View):
 # VISTA DEL PERFIL DEL USUARIO     
 @add_group_name_to_context
 class ProfileView(TemplateView):
+    """Vista para mostrar y gestionar el perfil del usuario"""
     template_name = 'profile/profile.html'
 
     def get_context_data(self, **kwargs):
@@ -138,27 +139,36 @@ class ProfileView(TemplateView):
 
         elif user.groups.filter(name='clientes').exists():
             # Obtener todos los servicios donde el cliente está inscrito
-            registrations = RegistroServicio.objects.filter(cliente=user)
-            enrolled_services = []
-            inscription_services = []
-            progress_services = []
-            finalized_services = []
+            registros = RegistroServicio.objects.filter(
+                cliente=user
+            ).select_related('servicio')
 
-            for registration in registrations:
-                service = registration.servicio
-                enrolled_services.append(service)
+            # Inicializar listas para cada tipo de servicio
+            servicios_totales = []
+            servicios_solicitud = []
+            servicios_progreso = []
+            servicios_finalizados = []
 
-                if service.status == 'S':
-                    inscription_services.append(service)
-                elif service.status == 'P':
-                    progress_services.append(service)
-                elif service.status == 'F':
-                    finalized_services.append(service)
+            # Clasificar servicios por estado
+            for registro in registros:
+                servicio = registro.servicio
+                servicios_totales.append(servicio)
 
-            context['enrolled_services'] = enrolled_services
-            context['inscription_services'] = inscription_services
-            context['progress_services'] = progress_services
-            context['finalized_services'] = finalized_services
+                if servicio.status == 'S':
+                    servicios_solicitud.append(servicio)
+                elif servicio.status == 'P':
+                    servicios_progreso.append(servicio)
+                elif servicio.status == 'F':
+                    servicios_finalizados.append(servicio)
+
+            # Agregar datos al contexto
+            context.update({
+                'servicios_totales': servicios_totales,
+                'servicios_solicitud': servicios_solicitud,
+                'servicios_progreso': servicios_progreso,
+                'servicios_finalizados': servicios_finalizados,
+                'cliente_id': user.id
+            })
 
         elif user.groups.filter(name='administradores').exists():
             # Obtener todos los servicios para administradores
@@ -186,6 +196,7 @@ class ProfileView(TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
+        """Maneja la actualización del perfil del usuario"""
         user = self.request.user
         user_form = UserForm(request.POST, instance=user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=user.profile)
@@ -193,13 +204,13 @@ class ProfileView(TemplateView):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
             return redirect('profile')
 
         context = self.get_context_data()
         context['user_form'] = user_form
         context['profile_form'] = profile_form
         return render(request, 'profile/profile.html', context)
-        
 
 
 
@@ -430,9 +441,9 @@ class UpdateInfoclienteView(UpdateView):
 @add_group_name_to_context
 class AsistenciaListView(ListView):
     """Vista para listar las asistencias a las citas de un servicio"""
-    model = Asistencia  # Agregamos el modelo
+    model = Asistencia
     template_name = 'asistencia_list.html'
-    context_object_name = 'asistencias'  # Nombre del contexto para la lista de objetos
+    context_object_name = 'asistencias'
 
     def get_queryset(self):
         """Define el queryset base para la vista"""
@@ -446,59 +457,67 @@ class AsistenciaListView(ListView):
         """Obtiene el contexto con los datos de asistencias"""
         context = super().get_context_data(**kwargs)
         
+        # Obtener servicio y sus clientes
         servicio = get_object_or_404(Servicios, id=self.kwargs['servicio_id'])
-        clientes = RegistroServicio.objects.filter(servicio=servicio).select_related('cliente').values(
-            'cliente__id', 
-            'cliente__first_name', 
-            'cliente__last_name'
-        )
+        registros_servicio = RegistroServicio.objects.filter(
+            servicio=servicio
+        ).select_related('cliente')
 
-        fechas_citas = Asistencia.objects.filter(
-            servicio=servicio, 
+        # Obtener todas las fechas de asistencia
+        fechas_asistencia = Asistencia.objects.filter(
+            servicio=servicio,
             date__isnull=False
         ).values_list('date', flat=True).distinct().order_by('date')
-        
-        sesiones_restantes = max(0, servicio.n_procedimientos - fechas_citas.count())
 
-        todas_asistencias = Asistencia.objects.filter(
+        # Obtener todas las asistencias en un solo query
+        asistencias = Asistencia.objects.filter(
             servicio=servicio,
             date__isnull=False
         ).select_related('cliente')
 
+        # Crear diccionario de asistencias para acceso rápido
         asistencias_dict = {
             (a.cliente_id, a.date): a.present 
-            for a in todas_asistencias
+            for a in asistencias
         }
 
+        # Preparar datos para la tabla
         asistencia_data = []
-        for fecha in fechas_citas:
-            asistencia_dict = {
+        for fecha in fechas_asistencia:
+            datos_fecha = {
                 'fecha': fecha,
                 'asistencia_data': []
             }
 
-            for cliente in clientes:
-                cliente_id = cliente['cliente__id']
-                estado_asistencia = asistencias_dict.get((cliente_id, fecha))
+            for registro in registros_servicio:
+                estado = asistencias_dict.get((registro.cliente.id, fecha))
+                datos_fecha['asistencia_data'].append({
+                    'cliente': {
+                        'cliente__id': registro.cliente.id,
+                        'cliente__first_name': registro.cliente.first_name,
+                        'cliente__last_name': registro.cliente.last_name
+                    },
+                    'estado_asistencia': estado,
+                    'presente': estado is True,
+                    'ausente': estado is False,
+                    'sin_registro': estado is None
+                })
 
-                cliente_data = {
-                    'cliente': cliente,
-                    'estado_asistencia': estado_asistencia,
-                    'presente': estado_asistencia is True,
-                    'ausente': estado_asistencia is False,
-                    'sin_registro': estado_asistencia is None
-                }
-                asistencia_dict['asistencia_data'].append(cliente_data)
+            asistencia_data.append(datos_fecha)
 
-            asistencia_data.append(asistencia_dict)
-
+        # Actualizar contexto
+        sesiones_completadas = len(fechas_asistencia)
         context.update({
             'servicio': servicio,
-            'clientes': clientes,
+            'clientes': registros_servicio.values(
+                'cliente__id',
+                'cliente__first_name',
+                'cliente__last_name'
+            ),
             'asistencia_data': asistencia_data,
-            'sesiones_restantes': sesiones_restantes,
+            'sesiones_restantes': max(0, servicio.n_procedimientos - sesiones_completadas),
             'total_sesiones': servicio.n_procedimientos,
-            'sesiones_completadas': fechas_citas.count()
+            'sesiones_completadas': sesiones_completadas
         })
         
         return context
@@ -537,15 +556,16 @@ class AgregarAsistenciaView(TemplateView):
             checkbox_name = f'asistencia_{registro.cliente.id}'
             presente = checkbox_name in request.POST
             
-            asistencia = Asistencia.objects.filter(
+            # Crear nueva asistencia si no existe
+            asistencia, created = Asistencia.objects.get_or_create(
                 cliente=registro.cliente,
                 servicio=servicio,
-                date=None
-            ).first()
+                date=fecha,
+                defaults={'present': presente}
+            )
 
-            if asistencia:
-                asistencia.date = fecha
-                asistencia.present = presente  # True si el checkbox está marcado (SR), False si no (NR)
+            if not created:
+                asistencia.present = presente
                 asistencia.save()
 
         messages.success(request, 'Asistencias registradas correctamente.')

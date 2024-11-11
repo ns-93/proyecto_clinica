@@ -1,0 +1,105 @@
+<!-- Servicios del Cliente -->
+<div class="container mt-3">
+    <h5>MIS SERVICIOS SOLICITADOS</h5>
+    <!-- Acordeón para mostrar los servicios agrupados por estado -->
+    <div class="accordion" id="accordionServicios">
+        <!-- Servicios en progreso -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button collapsed bg-warning" type="button" 
+                        data-bs-toggle="collapse" data-bs-target="#collapseOne" 
+                        aria-expanded="false" aria-controls="collapseOne">
+                    SERVICIOS EN PROGRESO
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" 
+                aria-labelledby="headingOne" data-bs-parent="#accordionServicios">
+                <div class="accordion-body">
+                    {% if servicios_progreso %}
+                        <ul class="list-group">
+                            {% for servicio in servicios_progreso %}
+                                <li class="list-group-item list-group-item-warning">
+                                    {{ servicio.name }}
+                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    class="btn btn-sm btn-warning float-end">
+                                        Ver Asistencias
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            No tienes servicios en progreso
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Servicios en solicitud -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed bg-success text-light" type="button" 
+                        data-bs-toggle="collapse" data-bs-target="#collapseTwo" 
+                        aria-expanded="false" aria-controls="collapseTwo">
+                    SERVICIOS EN SOLICITUD
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" 
+                aria-labelledby="headingTwo" data-bs-parent="#accordionServicios">
+                <div class="accordion-body">
+                    {% if servicios_solicitud %}
+                        <ul class="list-group">
+                            {% for servicio in servicios_solicitud %}
+                                <li class="list-group-item list-group-item-success">
+                                    {{ servicio.name }}
+                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    class="btn btn-sm btn-success float-end">
+                                        Ver Asistencias
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-success" role="alert">
+                            No tienes servicios en solicitud
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Servicios finalizados -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed bg-danger text-light" type="button" 
+                        data-bs-toggle="collapse" data-bs-target="#collapseThree" 
+                        aria-expanded="false" aria-controls="collapseThree">
+                    SERVICIOS FINALIZADOS
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" 
+                aria-labelledby="headingThree" data-bs-parent="#accordionServicios">
+                <div class="accordion-body">
+                    {% if servicios_finalizados %}
+                        <ul class="list-group">
+                            {% for servicio in servicios_finalizados %}
+                                <li class="list-group-item list-group-item-danger">
+                                    {{ servicio.name }}
+                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    class="btn btn-sm btn-danger float-end">
+                                        Ver Asistencias
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-danger" role="alert">
+                            No tienes servicios finalizados
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
