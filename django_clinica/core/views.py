@@ -1,13 +1,13 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
-from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView
+from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView, ListView
 from django.contrib.auth.models import Group
 from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm 
 from django.views import View
 from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
-from .models import Servicios, RegistroServicio, Infocliente
+from .models import Servicios, RegistroServicio, Infocliente, Asistencia
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -113,7 +113,7 @@ class RegisterView(View):
         return render(request, 'registration/register.html', data)
     
 
-# VISTA DEL PERFIL DEL USUARIO
+# VISTA DEL PERFIL DEL USUARIO     
 @add_group_name_to_context
 class ProfileView(TemplateView):
     template_name = 'profile/profile.html'
@@ -123,16 +123,15 @@ class ProfileView(TemplateView):
         user = self.request.user
         
         # Agrega los formularios de usuario y perfil al contexto
-        context['user_form'] = UserForm(instance=user)  # Formulario del usuario
-        context['profile_form'] = ProfileForm(instance=user.profile)  # Formulario del perfil
+        context['user_form'] = UserForm(instance=user)
+        context['profile_form'] = ProfileForm(instance=user.profile)
 
-        # Se ajusta para manejar diferentes grupos de usuarios
         if user.groups.filter(name='profesionales').exists():
             # Obtener todos los servicios asignados al profesional
             assigned_services = Servicios.objects.filter(profesional=user).order_by('-id')
-            inscription_services = assigned_services.filter(status='S')  # Servicios solicitados
-            progress_services = assigned_services.filter(status='P')  # Servicios en progreso
-            finalized_services = assigned_services.filter(status='F')  # Servicios finalizados
+            inscription_services = assigned_services.filter(status='S')
+            progress_services = assigned_services.filter(status='P')
+            finalized_services = assigned_services.filter(status='F')
             context['inscription_services'] = inscription_services
             context['progress_services'] = progress_services
             context['finalized_services'] = finalized_services
@@ -150,27 +149,40 @@ class ProfileView(TemplateView):
                 enrolled_services.append(service)
 
                 if service.status == 'S':
-                    inscription_services.append(service)  # Servicios solicitados
+                    inscription_services.append(service)
                 elif service.status == 'P':
-                    progress_services.append(service)  # Servicios en progreso
+                    progress_services.append(service)
                 elif service.status == 'F':
-                    finalized_services.append(service)  # Servicios finalizados
+                    finalized_services.append(service)
 
             context['enrolled_services'] = enrolled_services
             context['inscription_services'] = inscription_services
             context['progress_services'] = progress_services
             context['finalized_services'] = finalized_services
 
-        elif user.groups.filter(name='administradores').exists() or user.groups.filter(name='ejecutivos').exists():
-            # Obtener todos los servicios disponibles para los administradores y ejecutivos
+        elif user.groups.filter(name='administradores').exists():
+            # Obtener todos los servicios para administradores
             all_services = Servicios.objects.all()
-            inscription_services = all_services.filter(status='S')  # Servicios solicitados
-            progress_services = all_services.filter(status='P')  # Servicios en progreso
-            finalized_services = all_services.filter(status='F')  # Servicios finalizados
+            inscription_services = all_services.filter(status='S')
+            progress_services = all_services.filter(status='P')
+            finalized_services = all_services.filter(status='F')
             context['inscription_services'] = inscription_services
             context['progress_services'] = progress_services
             context['finalized_services'] = finalized_services
-        
+
+        elif user.groups.filter(name='ejecutivos').exists():
+            # Obtener todos los servicios
+            todos_servicios = Servicios.objects.all()
+            
+            # Filtrar por estado
+            context['servicios_progreso'] = todos_servicios.filter(status='P')
+            context['servicios_solicitud'] = todos_servicios.filter(status='S')
+            context['servicios_finalizados'] = todos_servicios.filter(status='F')
+            
+            # Agregar conteo de registros
+            for servicio in todos_servicios:
+                servicio.registro_count = servicio.registroservicio_set.count()
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -178,17 +190,18 @@ class ProfileView(TemplateView):
         user_form = UserForm(request.POST, instance=user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=user.profile)
 
-        # Procesa los formularios de perfil y usuario
         if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()  # Guarda el formulario de usuario
-            profile_form.save()  # Guarda el formulario de perfil
-            return redirect('profile')  # Redirige al perfil del usuario
+            user_form.save()
+            profile_form.save()
+            return redirect('profile')
 
-        # Si los datos no son válidos, vuelve a mostrar el formulario con los errores
         context = self.get_context_data()
         context['user_form'] = user_form
         context['profile_form'] = profile_form
         return render(request, 'profile/profile.html', context)
+        
+
+
 
 # MOSTRAR TODOS LOS servicios
 # VISTA DE TODOS LOS SERVICIOS DISPONIBLES
@@ -412,3 +425,115 @@ class UpdateInfoclienteView(UpdateView):
         return get_object_or_404(Infocliente, id=infocliente_id)
     
 #hasta aqui la actualizacion de la informacion del cliente
+
+
+@add_group_name_to_context
+class AsistenciaListView(ListView):
+    """Vista para listar las asistencias a las citas de un servicio"""
+    model = Asistencia
+    template_name = 'asistencia_list.html'
+
+    def get_queryset(self):
+        """Obtiene las asistencias filtradas por servicio y fecha"""
+        servicio_id = self.kwargs['servicio_id']
+        return Asistencia.objects.filter(
+            servicio_id=servicio_id, 
+            date__isnull=False
+        ).order_by('date')
+
+    def get_context_data(self, **kwargs):
+        """Obtiene el contexto con los datos de asistencias"""
+        context = super().get_context_data(**kwargs)
+        
+        # Obtener el servicio y sus registros
+        servicio = get_object_or_404(Servicios, id=self.kwargs['servicio_id'])
+        clientes = RegistroServicio.objects.filter(servicio=servicio).values(
+            'cliente__id', 
+            'cliente__first_name', 
+            'cliente__last_name'
+        )
+
+        # Obtener todas las fechas de citas y calcular sesiones restantes
+        fechas_citas = Asistencia.objects.filter(
+            servicio=servicio, 
+            date__isnull=False
+        ).values_list('date', flat=True).distinct().order_by('date')
+        
+        sesiones_restantes = servicio.n_procedimientos - fechas_citas.count()
+
+        # Preparar datos de asistencia
+        asistencia_data = []
+        for fecha in fechas_citas:
+            asistencia_dict = {
+                'fecha': fecha,
+                'asistencia_data': []
+            }
+
+            for cliente in clientes:
+                try:
+                    asistencia = Asistencia.objects.get(
+                        servicio=servicio,
+                        cliente_id=cliente['cliente__id'],
+                        date=fecha
+                    )
+                    estado_asistencia = asistencia.present
+                except Asistencia.DoesNotExist:
+                    estado_asistencia = False
+
+                cliente_data = {
+                    'cliente': cliente,
+                    'estado_asistencia': estado_asistencia
+                }
+                asistencia_dict['asistencia_data'].append(cliente_data)
+
+            asistencia_data.append(asistencia_dict)
+
+        # Agregar datos al contexto
+        context['servicio'] = servicio
+        context['clientes'] = clientes
+        context['asistencia_data'] = asistencia_data
+        context['sesiones_restantes'] = sesiones_restantes
+        return context
+
+@add_group_name_to_context
+class AgregarAsistenciaView(TemplateView):
+    """Vista para agregar asistencias a las citas"""
+    template_name = 'agregar_asistencia.html'
+
+    def get_context_data(self, **kwargs):
+        """Obtiene el contexto con los datos del servicio y sus registros"""
+        context = super().get_context_data(**kwargs)
+        servicio_id = kwargs['servicio_id']
+        servicio = get_object_or_404(Servicios, id=servicio_id)
+        registros = RegistroServicio.objects.filter(servicio=servicio)
+        
+        context['servicio'] = servicio
+        context['registros'] = registros
+        return context
+
+    def post(self, request, servicio_id):
+        """Procesa el formulario de asistencia"""
+        fecha = request.POST.get('date')
+        servicio = get_object_or_404(Servicios, id=servicio_id)
+        registros = RegistroServicio.objects.filter(servicio=servicio)
+
+        # Verificar si ya existe asistencia para esa fecha
+        if Asistencia.objects.filter(servicio=servicio, date=fecha).exists():
+            messages.error(request, 'Ya existe un registro de asistencia para esta fecha.')
+            return redirect('agregar_asistencia', servicio_id=servicio_id)
+        
+        # Crear registros de asistencia
+        for registro in registros:
+            presente = request.POST.get(f'asistencia_{registro.cliente.id}')
+            asistencia = Asistencia.objects.filter(
+                cliente=registro.cliente,
+                servicio=servicio,
+                date=None
+            ).first()
+
+            if asistencia:
+                asistencia.date = fecha
+                asistencia.present = bool(presente)
+                asistencia.save()
+
+        return redirect('lista_asistencia', servicio_id=servicio_id)

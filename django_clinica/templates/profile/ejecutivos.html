@@ -1,0 +1,89 @@
+
+<div class="container mt-3">
+    <!-- Título principal -->
+    <h5>TODOS LOS SERVICIOS</h5>
+
+    <!-- Card para servicios en progreso -->
+    <div class="card text-bg-warning shadow mt-3 mb-3">
+        <div class="card-header">SERVICIOS EN PROGRESO</div>
+        <div class="card-body">
+            {% if servicios_progreso %}
+                <ul class="list-group">
+                    {% for servicio in servicios_progreso %}
+                        {% with registro_count=servicio.registroservicio_set.count %}
+                            <li class="list-group-item list-group-item-warning">
+                                {{ servicio.name }}
+                                <a href="{% url 'servicios_list' servicios_id=servicio.id %}" class="btn btn-sm btn-warning float-end">
+                                    {% if servicio.status == 'P' %}
+                                        Ver Registros
+                                    {% endif %}
+                                    <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
+                                </a>
+                            </li>
+                        {% endwith %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    No hay Servicios en progreso hasta el momento
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Card para servicios en solicitud -->
+    <div class="card text-bg-success shadow mb-3">
+        <div class="card-header">SERVICIOS EN SOLICITUD</div>
+        <div class="card-body">
+            {% if servicios_solicitud %}
+                <ul class="list-group">
+                    {% for servicio in servicios_solicitud %}
+                        {% with registro_count=servicio.registroservicio_set.count %}
+                            <li class="list-group-item list-group-item-success">
+                                {{ servicio.name }}
+                                <a href="{% url 'servicios_list' servicios_id=servicio.id %}" class="btn btn-sm btn-success float-end">
+                                    {% if servicio.status == 'S' %}
+                                        Consultar listado
+                                    {% endif %}
+                                    <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
+                                </a>
+                            </li>
+                        {% endwith %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-success" role="alert">
+                    No hay Servicios en solicitud hasta el momento
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Card para servicios finalizados -->
+    <div class="card text-bg-danger shadow mb-3">
+        <div class="card-header">SERVICIOS FINALIZADOS</div>
+        <div class="card-body">
+            {% if servicios_finalizados %}
+                <ul class="list-group">
+                    {% for servicio in servicios_finalizados %}
+                        {% with registro_count=servicio.registroservicio_set.count %}
+                            <li class="list-group-item list-group-item-danger">
+                                {{ servicio.name }}
+                                <a href="{% url 'servicios_list' servicios_id=servicio.id %}" class="btn btn-sm btn-danger float-end">
+                                    {% if servicio.status == 'F' %}
+                                        Consultar listado
+                                    {% endif %}
+                                    <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
+                                </a>
+                            </li>
+                        {% endwith %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-danger" role="alert">
+                    No hay Servicios finalizados hasta el momento
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

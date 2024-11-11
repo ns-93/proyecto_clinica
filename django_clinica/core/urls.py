@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView
 from django.contrib.auth.decorators import login_required
 
 # Definición de las rutas o URLs para la aplicación
@@ -31,6 +31,8 @@ urlpatterns = [
     path('servicios/<int:servicios_id>/', login_required(ServiciosListView.as_view()), name='servicios_list'),
     # URL para actualizar la información del cliente
     path('servicios/update_infocliente/<int:infocliente_id>/', login_required(UpdateInfoclienteView.as_view()), name='update_info'),
+    path('servicios/<int:servicio_id>/asistencias/', AsistenciaListView.as_view(), name='lista_asistencia'),
+    path('servicios/<int:servicio_id>/asistencias/agregar/', AgregarAsistenciaView.as_view(), name='agregar_asistencia'),
     
     
     
