@@ -430,38 +430,46 @@ class UpdateInfoclienteView(UpdateView):
 @add_group_name_to_context
 class AsistenciaListView(ListView):
     """Vista para listar las asistencias a las citas de un servicio"""
-    model = Asistencia
+    model = Asistencia  # Agregamos el modelo
     template_name = 'asistencia_list.html'
+    context_object_name = 'asistencias'  # Nombre del contexto para la lista de objetos
 
     def get_queryset(self):
-        """Obtiene las asistencias filtradas por servicio y fecha"""
+        """Define el queryset base para la vista"""
         servicio_id = self.kwargs['servicio_id']
         return Asistencia.objects.filter(
-            servicio_id=servicio_id, 
+            servicio_id=servicio_id,
             date__isnull=False
-        ).order_by('date')
+        ).select_related('servicio', 'cliente').order_by('date')
 
     def get_context_data(self, **kwargs):
         """Obtiene el contexto con los datos de asistencias"""
         context = super().get_context_data(**kwargs)
         
-        # Obtener el servicio y sus registros
         servicio = get_object_or_404(Servicios, id=self.kwargs['servicio_id'])
-        clientes = RegistroServicio.objects.filter(servicio=servicio).values(
+        clientes = RegistroServicio.objects.filter(servicio=servicio).select_related('cliente').values(
             'cliente__id', 
             'cliente__first_name', 
             'cliente__last_name'
         )
 
-        # Obtener todas las fechas de citas y calcular sesiones restantes
         fechas_citas = Asistencia.objects.filter(
             servicio=servicio, 
             date__isnull=False
         ).values_list('date', flat=True).distinct().order_by('date')
         
-        sesiones_restantes = servicio.n_procedimientos - fechas_citas.count()
+        sesiones_restantes = max(0, servicio.n_procedimientos - fechas_citas.count())
 
-        # Preparar datos de asistencia
+        todas_asistencias = Asistencia.objects.filter(
+            servicio=servicio,
+            date__isnull=False
+        ).select_related('cliente')
+
+        asistencias_dict = {
+            (a.cliente_id, a.date): a.present 
+            for a in todas_asistencias
+        }
+
         asistencia_data = []
         for fecha in fechas_citas:
             asistencia_dict = {
@@ -470,38 +478,36 @@ class AsistenciaListView(ListView):
             }
 
             for cliente in clientes:
-                try:
-                    asistencia = Asistencia.objects.get(
-                        servicio=servicio,
-                        cliente_id=cliente['cliente__id'],
-                        date=fecha
-                    )
-                    estado_asistencia = asistencia.present
-                except Asistencia.DoesNotExist:
-                    estado_asistencia = False
+                cliente_id = cliente['cliente__id']
+                estado_asistencia = asistencias_dict.get((cliente_id, fecha))
 
                 cliente_data = {
                     'cliente': cliente,
-                    'estado_asistencia': estado_asistencia
+                    'estado_asistencia': estado_asistencia,
+                    'presente': estado_asistencia is True,
+                    'ausente': estado_asistencia is False,
+                    'sin_registro': estado_asistencia is None
                 }
                 asistencia_dict['asistencia_data'].append(cliente_data)
 
             asistencia_data.append(asistencia_dict)
 
-        # Agregar datos al contexto
-        context['servicio'] = servicio
-        context['clientes'] = clientes
-        context['asistencia_data'] = asistencia_data
-        context['sesiones_restantes'] = sesiones_restantes
+        context.update({
+            'servicio': servicio,
+            'clientes': clientes,
+            'asistencia_data': asistencia_data,
+            'sesiones_restantes': sesiones_restantes,
+            'total_sesiones': servicio.n_procedimientos,
+            'sesiones_completadas': fechas_citas.count()
+        })
+        
         return context
 
 @add_group_name_to_context
 class AgregarAsistenciaView(TemplateView):
-    """Vista para agregar asistencias a las citas"""
     template_name = 'agregar_asistencia.html'
 
     def get_context_data(self, **kwargs):
-        """Obtiene el contexto con los datos del servicio y sus registros"""
         context = super().get_context_data(**kwargs)
         servicio_id = kwargs['servicio_id']
         servicio = get_object_or_404(Servicios, id=servicio_id)
@@ -512,8 +518,11 @@ class AgregarAsistenciaView(TemplateView):
         return context
 
     def post(self, request, servicio_id):
-        """Procesa el formulario de asistencia"""
         fecha = request.POST.get('date')
+        if not fecha:
+            messages.error(request, 'La fecha es requerida.')
+            return redirect('agregar_asistencia', servicio_id=servicio_id)
+
         servicio = get_object_or_404(Servicios, id=servicio_id)
         registros = RegistroServicio.objects.filter(servicio=servicio)
 
@@ -524,7 +533,7 @@ class AgregarAsistenciaView(TemplateView):
         
         # Crear registros de asistencia
         for registro in registros:
-            presente = request.POST.get(f'asistencia_{registro.cliente.id}')
+            presente = request.POST.get(f'asistencia_{registro.cliente.id}') == 'True'
             asistencia = Asistencia.objects.filter(
                 cliente=registro.cliente,
                 servicio=servicio,
@@ -533,7 +542,8 @@ class AgregarAsistenciaView(TemplateView):
 
             if asistencia:
                 asistencia.date = fecha
-                asistencia.present = bool(presente)
+                asistencia.present = presente
                 asistencia.save()
 
+        messages.success(request, 'Asistencias registradas correctamente.')
         return redirect('lista_asistencia', servicio_id=servicio_id)

@@ -1,4 +1,3 @@
-
 <div class="container mt-3">
     <!-- Título principal -->
     <h5>TODOS LOS SERVICIOS</h5>
@@ -13,9 +12,9 @@
                         {% with registro_count=servicio.registroservicio_set.count %}
                             <li class="list-group-item list-group-item-warning">
                                 {{ servicio.name }}
-                                <a href="{% url 'servicios_list' servicios_id=servicio.id %}" class="btn btn-sm btn-warning float-end">
+                                <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-sm btn-warning float-end">
                                     {% if servicio.status == 'P' %}
-                                        Ver Registros
+                                        Ver Asistencias
                                     {% endif %}
                                     <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
                                 </a>
@@ -41,9 +40,9 @@
                         {% with registro_count=servicio.registroservicio_set.count %}
                             <li class="list-group-item list-group-item-success">
                                 {{ servicio.name }}
-                                <a href="{% url 'servicios_list' servicios_id=servicio.id %}" class="btn btn-sm btn-success float-end">
+                                <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-sm btn-success float-end">
                                     {% if servicio.status == 'S' %}
-                                        Consultar listado
+                                        Ver Asistencias
                                     {% endif %}
                                     <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
                                 </a>
@@ -69,9 +68,9 @@
                         {% with registro_count=servicio.registroservicio_set.count %}
                             <li class="list-group-item list-group-item-danger">
                                 {{ servicio.name }}
-                                <a href="{% url 'servicios_list' servicios_id=servicio.id %}" class="btn btn-sm btn-danger float-end">
+                                <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-sm btn-danger float-end">
                                     {% if servicio.status == 'F' %}
-                                        Consultar listado
+                                        Ver Asistencias
                                     {% endif %}
                                     <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
                                 </a>

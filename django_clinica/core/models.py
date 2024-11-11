@@ -79,22 +79,41 @@ class RegistroServicio(models.Model):
 # Modelo para registrar la asistencia del cliente a las sesiones del servicio
 class Asistencia(models.Model):
     # Servicio al que asiste el cliente
-    servicio = models.ForeignKey( Servicios, on_delete=models.CASCADE, verbose_name= 'Servicio')
-    # Cliente que asiste a la sesión, limitado al grupo "clientes"
-    cliente = models.ForeignKey(User, on_delete=models.CASCADE, related_name='asistencias' ,limit_choices_to={'groups__name':'clientes'},verbose_name='cliente')
+    servicio = models.ForeignKey(
+        Servicios, 
+        on_delete=models.CASCADE,
+        verbose_name='Servicio'
+    )
+    
+    # Cliente que asiste al servicio
+    cliente = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        verbose_name='Cliente'
+    )
+    
     # Fecha de la asistencia
-    date= models.DateField(null=True, blank=True, verbose_name='Fecha')
-    # Campo booleano para indicar si el cliente asistió o no
-    present = models.BooleanField(default=False, blank=True, null=True, verbose_name='Asistido')
+    date = models.DateField(
+        null=True, 
+        blank=True,
+        verbose_name='Fecha de asistencia'
+    )
+    
+    # Indica si el cliente asistió o no
+    present = models.BooleanField(
+        null=True, 
+        blank=True,
+        verbose_name='¿Asistió?'
+    )
 
-# Muestra el ID de la asistencia
     def __str__(self):
-        return f'Asistencia {self.id}'
+        return f"{self.cliente.username} - {self.servicio.name} - {self.date or 'Sin fecha'}"
 
     class Meta:
-        verbose_name= 'Asistencia'
-        verbose_name_plural= 'Asisitencias'
-
+        verbose_name = 'asistencia'
+        verbose_name_plural = 'asistencias'
+        # Ordenar por fecha de asistencia
+        ordering = ['date']
     #hasta aqui la asistencia a procedimientos
 
 
