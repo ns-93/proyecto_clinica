@@ -533,7 +533,10 @@ class AgregarAsistenciaView(TemplateView):
         
         # Crear registros de asistencia
         for registro in registros:
-            presente = request.POST.get(f'asistencia_{registro.cliente.id}') == 'True'
+            # Verificar si el checkbox existe en el POST
+            checkbox_name = f'asistencia_{registro.cliente.id}'
+            presente = checkbox_name in request.POST
+            
             asistencia = Asistencia.objects.filter(
                 cliente=registro.cliente,
                 servicio=servicio,
@@ -542,7 +545,7 @@ class AgregarAsistenciaView(TemplateView):
 
             if asistencia:
                 asistencia.date = fecha
-                asistencia.present = presente
+                asistencia.present = presente  # True si el checkbox está marcado (SR), False si no (NR)
                 asistencia.save()
 
         messages.success(request, 'Asistencias registradas correctamente.')

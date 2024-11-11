@@ -1,59 +1,51 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="container mt-3">
-        <h2>Administración de Asistencias a Procediminetos Dentales</h2>
-        <h4>
-            Listado de Clientes - <strong>{{ servicio.name }}</strong>
-            {% if servicio.status == 'S' %}
-                <span class="badge bg-success float-end">EN SOLICITUD</span>
-            {% elif servicio.status == 'P' %}
-                <span class="badge bg-warning text-dark float-end">EN PROGRESO</span>
-            {% elif servicio.status == 'F' %}
-                <span class="badge bg-danger float-end">FINALIZADO</span>
-            {% endif %}
-        </h4>
-        <hr>
-        <div class="row">
-            <div class="col">
-                <h5>Cantidad de Sesiones: {{ servicio.n_procedimientos }}</h5>
-            </div>
-            <div class="col">
-                <h5>Sesiones restantes: {{ sesiones_restantes }}</h5>
-            </div>
+<div class="container mt-3">
+    <h2>Administración de Asistencias a Procedimientos Dentales</h2>
+    <h4>
+        Listado de Clientes - <strong>{{ servicio.name }}</strong>
+        {% if servicio.status == 'S' %}
+            <span class="badge bg-success float-end">EN SOLICITUD</span>
+        {% elif servicio.status == 'P' %}
+            <span class="badge bg-warning text-dark float-end">EN PROGRESO</span>
+        {% elif servicio.status == 'F' %}
+            <span class="badge bg-danger float-end">FINALIZADO</span>
+        {% endif %}
+    </h4>
+    <hr>
+    <div class="row">
+        <div class="col">
+            <h5>Cantidad de Sesiones: {{ servicio.n_procedimientos }}</h5>
         </div>
-        <hr>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <div>
-                    <h5>Calendario de Asistencias</h5>
-                    SR = Sesion Realizada | NR = Sesion No Realizada
-                </div>
-                <thead>
+        <div class="col">
+            <h5>Sesiones restantes: {{ sesiones_restantes }}</h5>
+        </div>
+    </div>
+    <hr>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
                 <tr>
                     <th>Cliente</th>
                     {% for asistencia in asistencia_data %}
-                        <th class="text-center">{{ asistencia.date }}</th>
+                        <th class="text-center">{{ asistencia.fecha }}</th>
                     {% endfor %}
                 </tr>
-                </thead>
-                <tbody>
+            </thead>
+            <tbody>
                 {% for cliente in clientes %}
                     <tr>
                         <td>{{ cliente.cliente__first_name }} {{ cliente.cliente__last_name }}</td>
                         {% for item in asistencia_data %}
                             {% for asistencia in item.asistencia_data %}
                                 {% if cliente.cliente__id == asistencia.cliente.cliente__id %}
-                                    {% if asistencia.present == True %}
-                                    <!-- Si el cliente está presente -->
-                                        <td class="text-center text-primary">
+                                    {% if asistencia.estado_asistencia %}
+                                        <td class="text-center text-success">
                                             <strong>SR</strong>
                                         </td>
-                                        <!-- SR sesion realizada -->
-                                        <!-- NR sesion no realizada -->
                                     {% else %}
-                                    <!-- Si el cliente no está presente -->
-                                        <td class="text-center text-danger">
+                                        <td class="text-center text-primary">
                                             <strong>NR</strong>
                                         </td>
                                     {% endif %}
@@ -62,12 +54,16 @@
                         {% endfor %}
                     </tr>
                 {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <a class="btn btn-primary float-end {% if servicio.status == 'S' or servicio.status == 'F' or sesiones_restantes == 0 %}disabled{% endif %}" href="{% url 'agregar_asistencia' servicio.id %}">
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="mt-3">
+        <a class="btn btn-primary float-end {% if servicio.status == 'S' or servicio.status == 'F' or sesiones_restantes == 0 %}disabled{% endif %}" 
+        href="{% url 'agregar_asistencia' servicio.id %}">
             Agregar Asistencias
         </a>
         <a class="btn btn-secondary" href="{% url 'profile' %}">Volver Atrás</a>
     </div>
+</div>
 {% endblock %}

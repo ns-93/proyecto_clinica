@@ -22,11 +22,11 @@
         <div class="row">
             <div class="col-6 mx-auto">
                 <div class="card">
-                    <!-- Sección de mensajes de error -->
+                    <!-- Sección de mensajes -->
                     {% if messages %}
                         <div class="container mt-3">
                             {% for message in messages %}
-                            <div class="alert alert-danger" role="alert">
+                            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}danger{% endif %}" role="alert">
                                 {{ message }}
                             </div>
                             {% endfor %}
@@ -43,17 +43,30 @@
                         <!-- Selector de fecha -->
                         <div class="mb-3">
                             <label class="form-label" for="date">Fecha de asistencia:</label>
-                            <input class="form-control" type="date" name="date" id="date" required>
+                            <input class="form-control" 
+                                type="date" 
+                                name="date" 
+                                id="date" 
+                                required>
                         </div>
                         <hr>
                         
-                        <!-- Lista de clientes para marcar asistencia -->
+                        <!-- Lista de clientes -->
                         <div class="mb-3">
                             <label class="form-label">Lista de asistencia:</label>
+                            <div class="alert alert-info">
+                                Marcar casilla = SR (Sesión Realizada)<br>
+                                Sin marcar = NR (No Realizada)
+                            </div>
                             {% for registro in registros %}
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" name="asistencia_{{ registro.cliente.id }}" id="{{ registro.cliente.id }}_present" value="True">
-                                    <label class="form-check-label" for="{{ registro.cliente.id }}_present">
+                                    <input class="form-check-input" 
+                                        type="checkbox" 
+                                        name="asistencia_{{ registro.cliente.id }}" 
+                                        id="{{ registro.cliente.id }}_present" 
+                                        value="1">
+                                    <label class="form-check-label" 
+                                        for="{{ registro.cliente.id }}_present">
                                         {{ registro.cliente.get_full_name }}
                                     </label>
                                 </div>
@@ -61,7 +74,7 @@
                         </div>
                     </div>
 
-                    <!-- Pie del formulario con botones -->
+                    <!-- Pie del formulario -->
                     <div class="card-footer">
                         <div class="d-flex justify-content-between">
                             <a class="btn btn-secondary" href="{% url 'lista_asistencia' servicio.id %}">
