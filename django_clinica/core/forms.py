@@ -73,3 +73,20 @@ class ServiciosForm(forms.ModelForm):
         Field('status'),
         Submit('submit', 'Submit') # Botón de envío para el formulario
     )     
+
+
+# FORMULARIO DE NUEVO USUARIO
+class UserCreationForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+
+    # Configuración de diseño del formulario usando FormHelper (de django-crispy-forms)
+    helper = FormHelper()
+    helper.layout = Layout(
+        Field('username'),
+        Field('first_name'),
+        Field('last_name'),
+        Field('email'),
+        Submit('submit', 'Crear Usuario')  # Botón de envío para el formulario
+    )

@@ -1,18 +1,23 @@
-from django.http import HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
-from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView, ListView
-from django.contrib.auth.models import Group
-from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm 
-from django.views import View
-from django.contrib.auth.models import User
-from django.utils.decorators import method_decorator
-from .models import Servicios, RegistroServicio, Infocliente, Asistencia
-from django.urls import reverse_lazy, reverse
-from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.conf import settings
 import os
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, update_session_auth_hash
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from django.contrib.auth.models import Group, User
+from django.contrib.auth.views import PasswordChangeView, LoginView
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import get_template
+from django.urls import reverse_lazy, reverse
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView, ListView, DetailView
+
+from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm,  UserCreationForm
+from .models import Servicios, RegistroServicio, Infocliente, Asistencia
+from accounts.models import Profile
+
 # Create your views here.
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
@@ -581,3 +586,89 @@ class AgregarAsistenciaView(TemplateView):
 
         messages.success(request, 'Asistencias registradas correctamente.')
         return redirect('lista_asistencia', servicio_id=servicio_id)
+    
+    
+#hasta aqui la asistencia de un servicio
+
+# CAMBIAR LA CONTRASEÑA DEL USUARIO
+@add_group_name_to_context
+class ProfilePasswordChangeView(PasswordChangeView):
+    template_name = 'profile/change_password.html'
+    success_url = reverse_lazy('profile')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['password_changed'] = self.request.session.get('password_changed', False)
+        return context
+
+    def form_valid(self, form):
+        # Actualizar el campo created_by_admin del modelo Profile
+        profile = Profile.objects.get(user=self.request.user)
+        profile.created_by_admin = False
+        profile.save()
+
+        messages.success(self.request, 'Cambio de contraseña exitoso')
+        update_session_auth_hash(self.request, form.user)
+        self.request.session['password_changed'] = True
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            'Hubo un error al momento de intentar cambiar la contraseña: {}.'.format(
+                form.errors.as_text()
+            )
+        )
+        return super().form_invalid(form)
+    
+#hasta aqui el cambio de contraseña
+
+# AGREGAR UN NUEVO USUARIO
+@add_group_name_to_context
+class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
+    model = User
+    form_class = UserCreationForm
+    template_name = 'add_usuarios.html'
+    success_url = reverse_lazy('profile')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        groups = Group.objects.all()
+        singular_groups = [plural_to_singular(group.name).capitalize() for group in groups]
+        context['groups'] = zip(groups, singular_groups)
+        return context
+
+    def form_valid(self, form):
+        # Obtener el grupo que seleccionó
+        group_id = self.request.POST['group']
+        group = get_object_or_404(Group, id=group_id)
+
+        # Crear usuario sin guardarlo aún
+        user = form.save(commit=False)
+
+        # Colocamos una contraseña por defecto -Aca podría ir la lógica para crear una contraseña aleatoria-
+        user.set_password('contraseña')
+
+        # Convertir a un usuario al staff
+        if group_id != '1':
+            user.is_staff = True
+
+        # Guardamos el usuario
+        user.save()
+
+        # Agregamos el usuario al grupo seleccionado
+        user.groups.clear()
+        user.groups.add(group)
+
+        messages.success(self.request, 'Usuario creado exitosamente')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Hubo un error al intentar crear el usuario: {}.'.format(form.errors.as_text()))
+        return super().form_invalid(form)

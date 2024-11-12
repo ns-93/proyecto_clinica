@@ -1,0 +1,100 @@
+<h5>Todos los Servicios</h5>
+
+{% if servicios_solicitud %}
+    <div class="alert alert-success" role="alert">
+        <h5>Servicios en Solicitud</h5>
+    </div>
+    <table class="table table-success table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Nombre del Servicio</th>
+                <th scope="col">Profesional</th>
+                <th class="text-center" scope="col">Cant.Sesiones</th>
+                <th class="text-center" scope="col">Cant.Clientes</th>
+                <th class="text-center" scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for servicio in servicios_solicitud %}
+                {% with registro_count=servicio.registroservicio_set.count %}
+                <tr>
+                    <td>{{ servicio.name }}</td>
+                    <td>{{ servicio.profesional.get_full_name }}</td>
+                    <td class="text-center">{{ servicio.n_procedimientos }}</td>
+                    <td class="text-center">{{ registro_count }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-info">Info</button>
+                        <a class="btn btn-sm btn-warning" href="{% url 'editar_servicios' servicio.id %}">Editar</a>
+                    </td>
+                </tr>
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if servicios_progreso %}
+    <div class="alert alert-warning" role="alert">
+        <h5>Servicios en Progreso</h5>
+    </div>
+    <table class="table table-warning table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Nombre del Servicio</th>
+                <th scope="col">Profesional</th>
+                <th class="text-center" scope="col">Cant.Sesiones</th>
+                <th class="text-center" scope="col">Cant.Clientes</th>
+                <th class="text-center" scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for servicio in servicios_progreso %}
+                {% with registro_count=servicio.registroservicio_set.count %}
+                <tr>
+                    <td>{{ servicio.name }}</td>
+                    <td>{{ servicio.profesional.get_full_name }}</td>
+                    <td class="text-center">{{ servicio.n_procedimientos }}</td>
+                    <td class="text-center">{{ registro_count }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-info">Info</button>
+                    </td>
+                </tr>
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if servicios_finalizados %}
+    <div class="alert alert-danger" role="alert">
+        <h5>Servicios Finalizados</h5>
+    </div>
+    <table class="table table-danger table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Nombre del Servicio</th>
+                <th scope="col">Profesional</th>
+                <th class="text-center" scope="col">Cant.Sesiones</th>
+                <th class="text-center" scope="col">Cant.Clientes</th>
+                <th class="text-center" scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for servicio in servicios_finalizados %}
+                {% with registro_count=servicio.registroservicio_set.count %}
+                <tr>
+                    <td>{{ servicio.name }}</td>
+                    <td>{{ servicio.profesional.get_full_name }}</td>
+                    <td class="text-center">{{ servicio.n_procedimientos }}</td>
+                    <td class="text-center">{{ registro_count }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-info">Info</button>
+                    </td>
+                </tr>
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<a class="btn btn-success" href="{% url 'servicios_create' %}">Agregar Servicio</a>
