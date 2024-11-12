@@ -1,1 +1,21 @@
-hola mundo !!! 
+<div>
+    <h5>Herramientas Administrativas</h5>
+    <ul class="nav nav-tabs nav-fill">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#usuarios" data-bs-toggle="tab">Usuarios</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#servicios" data-bs-toggle="tab">Servicios</a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active mt-2" id="usuarios">
+            {% include 'profile/admin_usuarios.html' %}
+        </div>
+
+        <div class="tab-pane fade show mt-2" id="servicios">
+            {% include 'profile/admin_servicios.html' %}
+        </div>
+    </div>
+</div>

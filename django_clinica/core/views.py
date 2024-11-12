@@ -113,7 +113,7 @@ class RegisterView(View):
         return render(request, 'registration/register.html', data)
     
 
-# VISTA DEL PERFIL DEL USUARIO     
+# VISTA DE PERFIL DE USUARIO
 @add_group_name_to_context
 class ProfileView(TemplateView):
     """Vista para mostrar y gestionar el perfil del usuario"""
@@ -130,18 +130,13 @@ class ProfileView(TemplateView):
         if user.groups.filter(name='profesionales').exists():
             # Obtener todos los servicios asignados al profesional
             assigned_services = Servicios.objects.filter(profesional=user).order_by('-id')
-            inscription_services = assigned_services.filter(status='S')
-            progress_services = assigned_services.filter(status='P')
-            finalized_services = assigned_services.filter(status='F')
-            context['inscription_services'] = inscription_services
-            context['progress_services'] = progress_services
-            context['finalized_services'] = finalized_services
+            context['inscription_services'] = assigned_services.filter(status='S')
+            context['progress_services'] = assigned_services.filter(status='P')
+            context['finalized_services'] = assigned_services.filter(status='F')
 
         elif user.groups.filter(name='clientes').exists():
             # Obtener todos los servicios donde el cliente está inscrito
-            registros = RegistroServicio.objects.filter(
-                cliente=user
-            ).select_related('servicio')
+            registros = RegistroServicio.objects.filter(cliente=user).select_related('servicio')
 
             # Inicializar listas para cada tipo de servicio
             servicios_totales = []
@@ -170,16 +165,6 @@ class ProfileView(TemplateView):
                 'cliente_id': user.id
             })
 
-        elif user.groups.filter(name='administradores').exists():
-            # Obtener todos los servicios para administradores
-            all_services = Servicios.objects.all()
-            inscription_services = all_services.filter(status='S')
-            progress_services = all_services.filter(status='P')
-            finalized_services = all_services.filter(status='F')
-            context['inscription_services'] = inscription_services
-            context['progress_services'] = progress_services
-            context['finalized_services'] = finalized_services
-
         elif user.groups.filter(name='ejecutivos').exists():
             # Obtener todos los servicios
             todos_servicios = Servicios.objects.all()
@@ -193,10 +178,37 @@ class ProfileView(TemplateView):
             for servicio in todos_servicios:
                 servicio.registro_count = servicio.registroservicio_set.count()
 
+        elif user.groups.filter(name='administradores').exists():
+            # Obtengo todos los usuarios que no pertenecen al grupo administradores
+            admin_group = Group.objects.get(name='administradores')
+            all_users = User.objects.exclude(groups__in=[admin_group])
+
+            # Obtengo todos los grupos
+            all_groups = Group.objects.all()
+
+            # Obtengo cada perfil de usuario
+            user_profiles = []
+            for user in all_users:
+                profile = user.profile
+                user_groups = user.groups.all()
+                processed_groups = [plural_to_singular(group.name) for group in user_groups]
+                user_profiles.append({
+                    'user': user,
+                    'groups': processed_groups,
+                    'profile': profile
+                })
+
+            context['user_profiles'] = user_profiles
+
+            # Obtener todos los servicios existentes
+            all_services = Servicios.objects.all()
+            context['servicios_solicitud'] = all_services.filter(status='S')
+            context['servicios_progreso'] = all_services.filter(status='P')
+            context['servicios_finalizados'] = all_services.filter(status='F')
+
         return context
 
     def post(self, request, *args, **kwargs):
-        """Maneja la actualización del perfil del usuario"""
         user = self.request.user
         user_form = UserForm(request.POST, instance=user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=user.profile)
@@ -204,7 +216,6 @@ class ProfileView(TemplateView):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            messages.success(request, 'Perfil actualizado correctamente.')
             return redirect('profile')
 
         context = self.get_context_data()
