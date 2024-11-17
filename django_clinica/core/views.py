@@ -110,6 +110,11 @@ class RegisterView(View):
             user_creation_form.save()  # Guarda el usuario
             user = authenticate(username=user_creation_form.cleaned_data['username'], password=user_creation_form.cleaned_data['password1'])
             login(request, user) # Inicia sesión al usuario
+            
+            # Actualiza el campo created_by_admin del modelo Profile
+            user.profile.created_by_admin = False
+            user.profile.save()
+
             return redirect('home') # Redirige a la página de inicio
         
         data = {
@@ -453,7 +458,7 @@ class UpdateInfoclienteView(UpdateView):
     
 #hasta aqui la actualizacion de la informacion del cliente
 
-
+#lista de asistencia de un servicio
 @add_group_name_to_context
 class AsistenciaListView(ListView):
     """Vista para listar las asistencias a las citas de un servicio"""
@@ -538,6 +543,7 @@ class AsistenciaListView(ListView):
         
         return context
 
+#agregar asistencia a un servicio o procedimiento
 @add_group_name_to_context
 class AgregarAsistenciaView(TemplateView):
     template_name = 'agregar_asistencia.html'
@@ -652,7 +658,7 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         # Crear usuario sin guardarlo aún
         user = form.save(commit=False)
 
-        # Colocamos una contraseña por defecto -Aca podría ir la lógica para crear una contraseña aleatoria-
+        # Colocamos una contraseña por defecto no aleatoria
         user.set_password('contraseña')
 
         # Convertir a un usuario al staff
@@ -672,3 +678,30 @@ class AddUserView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
     def form_invalid(self, form):
         messages.error(self.request, 'Hubo un error al intentar crear el usuario: {}.'.format(form.errors.as_text()))
         return super().form_invalid(form)
+    
+    
+#hasta aqui la creacion de un nuevo usuario
+
+
+#login personalizado
+@add_group_name_to_context
+class CustomLoginView(LoginView):
+    def form_valid(self, form):
+        response = super().form_valid(form)
+
+        # Acceder al perfil del usuario
+        profile = self.request.user.profile
+
+        # Verificamos el valor del campo created_by_admin asegurandonos que el usuario fue creado por el administrador
+        if profile.created_by_admin:
+            messages.info(self.request, 'Su Contraseña fue creada por defecto remplezace su contraseña')
+            response['Location'] = reverse_lazy('profile_password_change')
+            response.status_code = 302
+
+        return response
+
+    def get_success_url(self):
+        return super().get_success_url()
+
+#hasta aqui el login personalizado
+

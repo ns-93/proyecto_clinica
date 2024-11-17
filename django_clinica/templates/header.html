@@ -64,7 +64,7 @@
                     </form>
                 {% else %}  <!-- Si el usuario no está autenticado -->
                     <!-- Enlaces para iniciar sesión o registrarse -->
-                    <a href="{% url 'login' %}" class="btn btn-outline-light me-2">Iniciar Sesión</a>  <!-- Enlace para iniciar sesión -->
+                    <a href="{% url 'custom_login' %}" class="btn btn-outline-light me-2">Iniciar Sesión</a>  <!-- Enlace para iniciar sesión -->
                     <a href="{% url 'register' %}" class="btn btn-warning">Registrarse</a>  <!-- Enlace para registrarse -->
                 {% endif %}
             </div>  <!-- Fin de las acciones del usuario -->
