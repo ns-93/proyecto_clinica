@@ -16,7 +16,8 @@ class Profile(models.Model):
     address = models.CharField(max_length=150, null=True, blank=True, verbose_name='Direccion')
     location = models.CharField(max_length=100, null=True, blank=True, verbose_name='Localidad')
     telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name='telefono')
-
+    created_by_admin = models.BooleanField(default=True, blank=True, null=True, verbose_name='Creado por Admin')
+    
     # Configuración de metadatos del modelo
     class Meta:
         

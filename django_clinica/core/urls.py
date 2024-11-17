@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView
 from django.contrib.auth.decorators import login_required
 
 # Definición de las rutas o URLs para la aplicación
@@ -44,6 +44,9 @@ urlpatterns = [
     
     # Página de error: Para mostrar un mensaje de error si un usuario sin permisos intenta acceder a una ruta restringida
     path('error/', login_required(ErrorView.as_view()), name='error'),
+    
+    # Página de login personalizada: Ruta para el login de usuarios
+    path('login/', CustomLoginView.as_view(), name='custom_login'),
 ]
     
 
