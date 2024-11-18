@@ -154,3 +154,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Ruta completa para los archivos 
 LOGIN_REDIRECT_URL = 'home'
 # URL a la que el usuario será redirigido después de cerrar sesión.
 LOGOUT_REDIRECT_URL = 'home'
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Backend predeterminado
+    'accounts.backends.EmailOrUsernameBackend',   # Backend personalizado
+]

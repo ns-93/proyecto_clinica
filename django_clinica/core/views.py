@@ -191,8 +191,9 @@ class ProfileView(TemplateView):
         elif user.groups.filter(name='administradores').exists():
             # Obtengo todos los usuarios que no pertenecen al grupo administradores
             admin_group = Group.objects.get(name='administradores')
-            all_users = User.objects.exclude(groups__in=[admin_group])
-
+            """all_users = User.objects.exclude(groups__in=[admin_group])"""
+            
+            all_users = User.objects.all()
             # Obtengo todos los grupos
             all_groups = Group.objects.all()
 

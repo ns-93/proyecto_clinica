@@ -8,8 +8,13 @@ from crispy_forms.layout import Layout, Field, Submit
 
 
 # Formulario de inicio de sesión heredado de AuthenticationForm de Django
+"""class LoginForm(AuthenticationForm):
+    pass"""
+
+# Formularios personalizados para la aplicación de cuentas
 class LoginForm(AuthenticationForm):
-    pass
+    username = forms.CharField(label='Nombre de usuario o Correo electrónico', max_length=254)
+    password = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
 
 # Formulario de registro de usuario
 class RegisterForm(UserCreationForm):
