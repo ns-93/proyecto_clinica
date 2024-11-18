@@ -705,3 +705,115 @@ class CustomLoginView(LoginView):
 
 #hasta aqui el login personalizado
 
+#vizualiacion de la informacion de un usuario
+@add_group_name_to_context
+# VISTA DE DETALLES DEL USUARIO
+@add_group_name_to_context
+class UserDetailsView(LoginRequiredMixin, DetailView):
+    model = User
+    template_name = 'usuarios_detalles.html'
+    context_object_name = 'user_profile'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.get_object()
+        group_id, group_name, group_name_singular, color = get_group_and_color(user)
+
+        # Obtengo todos los grupos
+        groups = Group.objects.all()
+        singular_names = [plural_to_singular(group.name).capitalize() for group in groups]
+        groups_ids = [group.id for group in groups]
+        singular_groups = zip(singular_names, groups_ids)
+        context['group_id_user'] = group_id
+        context['group_name_user'] = group_name
+        context['group_name_singular_user'] = group_name_singular
+        context['color_user'] = color
+        context['singular_groups'] = singular_groups
+
+        if user.groups.first().name == 'profesionales':
+            # Obtener todos los servicios asignados al profesional
+            assigned_services = Servicios.objects.filter(profesional=user).order_by('-id')
+            inscription_services = assigned_services.filter(status='S')
+            progress_services = assigned_services.filter(status='P')
+            finalized_services = assigned_services.filter(status='F')
+            context['inscription_services'] = inscription_services
+            context['progress_services'] = progress_services
+            context['finalized_services'] = finalized_services
+
+        elif user.groups.first().name == 'clientes':
+            # Obtener todos los servicios donde el cliente está inscrito
+            cliente_id = user.id
+            registros = RegistroServicio.objects.filter(cliente=user)
+            servicios_totales = []
+            servicios_solicitud = []
+            servicios_progreso = []
+            servicios_finalizados = []
+
+            for registro in registros:
+                servicio = registro.servicio
+                servicios_totales.append(servicio)
+
+                if servicio.status == 'S':
+                    servicios_solicitud.append(servicio)
+                elif servicio.status == 'P':
+                    servicios_progreso.append(servicio)
+                elif servicio.status == 'F':
+                    servicios_finalizados.append(servicio)
+
+            context['cliente_id'] = cliente_id
+            context['servicios_totales'] = servicios_totales
+            context['servicios_solicitud'] = servicios_solicitud
+            context['servicios_progreso'] = servicios_progreso
+            context['servicios_finalizados'] = servicios_finalizados
+
+        elif user.groups.first().name == 'ejecutivos':
+            # Obtener todos los servicios existentes
+            all_services = Servicios.objects.all()
+            inscription_services = all_services.filter(status='S')
+            progress_services = all_services.filter(status='P')
+            finalized_services = all_services.filter(status='F')
+            context['inscription_services'] = inscription_services
+            context['progress_services'] = progress_services
+            context['finalized_services'] = finalized_services
+
+        return context
+    
+#hasta aqui la visualizacion de la informacion de un usuario
+
+#actualizacion de la informacion de un usuario
+# Vista para que un superusuario edite la información de un usuario
+def superuser_edit(request, user_id):
+    # Verificar si el usuario actual es un superusuario
+    if not request.user.is_superuser:
+        return redirect('error')
+
+    # Obtener el usuario a editar
+    user = User.objects.get(pk=user_id)
+    
+    if request.method == 'POST':
+        # Crear formularios con los datos enviados en la solicitud POST
+        user_form = UserForm(request.POST, instance=user)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=user.profile)
+        group = request.POST.get('group')
+
+        # Verificar si los formularios son válidos
+        if user_form.is_valid() and profile_form.is_valid():
+            # Guardar los formularios
+            user_form.save()
+            profile_form.save()
+            # Actualizar los grupos del usuario
+            user.groups.clear()
+            user.groups.add(group)
+            # Redirigir a la página de detalles del usuario
+            return redirect('usuario_detalles', pk=user.id)
+    else:
+        # Crear formularios con los datos actuales del usuario
+        user_form = UserForm(instance=user)
+        profile_form = ProfileForm(instance=user.profile)
+
+    # Contexto para renderizar la plantilla
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form
+    }
+    return render(request, 'usuarios_detalles.html', context)

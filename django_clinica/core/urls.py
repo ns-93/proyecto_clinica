@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit
 from django.contrib.auth.decorators import login_required
 
 # Definición de las rutas o URLs para la aplicación
@@ -47,6 +47,13 @@ urlpatterns = [
     
     # Página de login personalizada: Ruta para el login de usuarios
     path('login/', CustomLoginView.as_view(), name='custom_login'),
+    
+    # Página de detalles de usuario: Muestra los detalles de un usuario específico
+    path('usuarios_detalles/<int:pk>/', login_required(UserDetailsView.as_view()), name='usuario_detalles'),
+    
+    # Página para editar el perfil de un usuario por un superusuario
+    path('superuser_edit/<int:user_id>/', login_required(superuser_edit), name='superuser_edit'),
+    
 ]
     
 
