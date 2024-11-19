@@ -21,13 +21,14 @@ class RegisterForm(UserCreationForm):
     email = forms.EmailField(label='Correo electrónico')
     first_name = forms.CharField(label='Nombre')
     last_name = forms.CharField(label='Apellido')
+    rut = forms.CharField(max_length=12, required=True)
 
 # Configuración de metadatos para el formulario
     class Meta:
         # Especifica que este formulario se basa en el modelo User de Django
         # Define los campos que se mostrarán en el formulario de registro
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2']
+        fields = ['username','rut', 'email', 'first_name', 'last_name', 'password1', 'password2']
 
 # Método de validación para el campo de correo electrónico
     def clean_email(self):
@@ -49,7 +50,7 @@ class ProfileForm(forms.ModelForm):
             # Utiliza el modelo Profile (perfil de usuario personalizado)
             # Define los campos de perfil que se pueden actualizar
             model = Profile
-            fields = ['image', 'address', 'location', 'telephone']    
+            fields = ['image', 'address', 'location', 'telephone', 'rut']    
 
 
 # Formulario de servicios
