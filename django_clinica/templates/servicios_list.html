@@ -12,14 +12,17 @@
             {% endif %}
         </h2>
 
-        <table class="table">
+        <table class="table table-bordered">
             <thead>
             <tr>
                 <th scope="col">Cliente</th>
                 <th scope="col">Observación</th>
                 <th scope="col">Archivo</th>
                 <th scope="col">Odontograma</th>
-                <th scope="col">Acciones</th>
+                {% if group_name == 'administradores' or group_name == 'ejecutivos' or group_name == 'profesionales'  %}
+                    <th scope="col">Acciones</th>
+                {% endif %}
+                
             </tr>
             </thead>
             <tbody>
@@ -43,9 +46,15 @@
                     </td>
                     <td>
                         {% if data.registro_id %}
-                            <a class="btn btn-sm btn-primary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="{% url 'update_info' infocliente_id=data.registro_id %}">
-                                Agregar Datos
-                            </a>
+                            {% if group_name == 'administradores' or group_name == 'ejecutivos' or group_name == 'profesionales'  %}
+                                <a class="btn btn-sm btn-primary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="{% url 'update_info' infocliente_id=data.registro_id %}">
+                                    Agregar Datos
+                                </a>
+                                <hr>
+                                <a class="btn btn-sm btn-secondary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="">
+                                    Crear Odontograma
+                                </a>
+                            {% endif %}
                         {% else %}
                             No disponible
                         {% endif %}

@@ -20,8 +20,12 @@
                             {% for servicio in servicios_progreso %}
                                 <li class="list-group-item list-group-item-warning">
                                     {{ servicio.name }}
-                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    <a href="{% url 'servicios_list' servicio.id %}" 
                                     class="btn btn-sm btn-warning float-end">
+                                        Ver Detalles
+                                    </a>
+                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    class="btn btn-sm btn-warning float-end me-2">
                                         Ver Asistencias
                                     </a>
                                 </li>
@@ -53,8 +57,12 @@
                             {% for servicio in servicios_solicitud %}
                                 <li class="list-group-item list-group-item-success">
                                     {{ servicio.name }}
-                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    <a href="{% url 'servicios_list' servicio.id %}" 
                                     class="btn btn-sm btn-success float-end">
+                                        Ver Detalles
+                                    </a>
+                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    class="btn btn-sm btn-success float-end me-2">
                                         Ver Asistencias
                                     </a>
                                 </li>
@@ -86,8 +94,12 @@
                             {% for servicio in servicios_finalizados %}
                                 <li class="list-group-item list-group-item-danger">
                                     {{ servicio.name }}
-                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    <a href="{% url 'servicios_list' servicio.id %}" 
                                     class="btn btn-sm btn-danger float-end">
+                                        Ver Detalles
+                                    </a>
+                                    <a href="{% url 'lista_asistencia' servicio.id %}" 
+                                    class="btn btn-sm btn-danger float-end me-2">
                                         Ver Asistencias
                                     </a>
                                 </li>
