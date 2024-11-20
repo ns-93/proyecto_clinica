@@ -6,7 +6,7 @@ from .models import Profile
 # Configuración de la interfaz de administración para el modelo Profile
 class ProfileAdmin(admin.ModelAdmin):
     # Define las columnas que se mostrarán en la lista de objetos Profile
-    list_display = ('user', 'address', 'location', 'telephone', 'user_group')
+    list_display = ('user', 'address', 'location', 'telephone', 'rut','user_group')
     # Define los campos por los que se puede buscar en la interfaz de administración
     # Permite búsqueda por ubicación, nombre de usuario y nombre del grupo de usuarios
     search_fields = ('location', 'user__username', 'user__groups__name')
