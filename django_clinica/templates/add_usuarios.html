@@ -18,10 +18,16 @@
                 <div class="card-body">
                     <form action="{% url 'add_usuarios' %}" method="post">
                         {% csrf_token %}
-                        <div class="mb-3">
+                    <div class="mb-3 row">
+                        <div class="col">
                             <label for="username" class="form-label">Nombre de usuario</label>
-                            <input type="text" name="username" id="username" class="form-control">
+                            <input type="text" name="username" id="username" class="form-control">    
                         </div>
+                        <div class="col">
+                            <label for="rut" class="form-label">RUT</label>
+                            <input type="text" name="rut" id="rut" class="form-control">
+                        </div>
+                    </div>
 
                         <div class="mb-3 row">
                             <div class="col">

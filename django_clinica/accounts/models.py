@@ -15,7 +15,8 @@ class Profile(models.Model):
     # Campos de texto para la dirección del usuario, localidad y telefono; es opcional
     address = models.CharField(max_length=150, null=True, blank=True, verbose_name='Direccion')
     location = models.CharField(max_length=100, null=True, blank=True, verbose_name='Localidad')
-    telephone = models.CharField(max_length=20, null=True, blank=True, verbose_name='telefono')
+    telephone = models.CharField(max_length=12, null=True, blank=True, verbose_name='telefono')
+    rut = models.CharField(max_length=10, null=True, blank=True, verbose_name='Rut')
     created_by_admin = models.BooleanField(default=True, blank=True, null=True, verbose_name='Creado por Admin')
     
     # Configuración de metadatos del modelo
