@@ -147,6 +147,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Ruta completa para los archivos multimedia.
 
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
 
 # Configuración de redirección de login/logout
 #login y logout
@@ -160,3 +165,4 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Backend predeterminado
     'accounts.backends.EmailOrUsernameBackend',   # Backend personalizado
 ]
+

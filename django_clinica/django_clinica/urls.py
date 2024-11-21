@@ -32,6 +32,8 @@ urlpatterns = [
     # Ruta para las URLs de autenticación proporcionadas por Django (login, logout, etc.).
     # Esto incluye las URLs estándar de Django para manejo de usuarios.
     path('accounts/', include('django.contrib.auth.urls')),
+    
+    
 ]
 
 # Solo se ejecutará si el modo DEBUG está habilitado.

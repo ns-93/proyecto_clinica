@@ -51,7 +51,7 @@
                                     Agregar Datos
                                 </a>
                                 <hr>
-                                <a class="btn btn-sm btn-secondary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="">
+                                <a class="btn btn-sm btn-secondary {% if servicio.status == 'S' or servicio.status == 'F' %}disabled{% endif %}" href="{% url 'new_odontogram' %}">
                                     Crear Odontograma
                                 </a>
                             {% endif %}
