@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, ask_odontogram, new_odontogram, tooth_view, update_odonto, view_odonto
 from django.contrib.auth.decorators import login_required
 
 # Definición de las rutas o URLs para la aplicación
@@ -53,6 +53,12 @@ urlpatterns = [
     
     # Página para editar el perfil de un usuario por un superusuario
     path('superuser_edit/<int:user_id>/', login_required(superuser_edit), name='superuser_edit'),
+    
+    path('ask/', ask_odontogram, name='ask_odontogram'),
+    path('new/', new_odontogram, name='new_odontogram'),
+    path('tooth/<int:pk_mouth>/<str:nb_tooth>/', tooth_view, name='tooth'),
+    path('update/<int:pk_mouth>/', update_odonto, name='update_odontogram'),
+    path('view/<int:pk_mouth>/', view_odonto, name='odontogram_in_codes'),
     
 ]
     
