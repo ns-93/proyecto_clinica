@@ -5,7 +5,7 @@
     {% load crispy_forms_tags %}  <!-- Carga las etiquetas de crispy-forms para aplicar un mejor estilo a los formularios -->
 
     <div class="container mt-3">  <!-- Contenedor con un margen superior de 3 unidades -->
-        <h2>INICIO DE SESION</h2>  <!-- Título principal de la página -->
+        <h2>Dental Knights</h2>  <!-- Título principal de la página -->
 
         <form method="POST" action="{% url 'login' %}">  <!-- Formulario para iniciar sesión (el método es POST para enviar datos al servidor) -->
             {% csrf_token %}  <!-- Token CSRF para proteger el formulario contra ataques CSRF -->

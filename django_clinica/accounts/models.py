@@ -16,7 +16,7 @@ class Profile(models.Model):
     address = models.CharField(max_length=150, null=True, blank=True, verbose_name='Direccion')
     location = models.CharField(max_length=100, null=True, blank=True, verbose_name='Localidad')
     telephone = models.CharField(max_length=12, null=True, blank=True, verbose_name='telefono')
-    rut = models.CharField(max_length=10, null=True, blank=True, verbose_name='Rut')
+    rut = models.CharField(max_length=12, null=True, blank=True, verbose_name='Rut')
     created_by_admin = models.BooleanField(default=True, blank=True, null=True, verbose_name='Creado por Admin')
     
     # Configuración de metadatos del modelo
@@ -42,4 +42,3 @@ def save_user_profile(sender, instance, **kwargs):
 # Conecta las señales post_save al modelo User para crear y guardar perfiles automáticamente
 post_save.connect(create_user_profile, sender=User)
 post_save.connect(save_user_profile, sender=User)
-      
