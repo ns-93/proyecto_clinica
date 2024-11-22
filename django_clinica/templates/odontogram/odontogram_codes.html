@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% load static %}
 
 {% block content %}
@@ -11,7 +12,7 @@
       <div class="full half-1000" style="width: 80%; margin: auto;">
         <div style="text-align: right;">
           <a href="{% url 'update_odontogram' pk_mouth=odontogram.id %}">
-            <button class="info">Vista con imágenes</button>
+            <button class="info">Vista por cuadrante dental</button>
           </a>
         </div>
         <article class="card" style="text-align: center;">
