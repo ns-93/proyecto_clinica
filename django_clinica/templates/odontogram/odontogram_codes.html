@@ -2,13 +2,18 @@
 {% load static %}
 
 {% block content %}
-<br><br>
+
 <div class="container">
   <div class="flex four demo">
     <!-- Empty container -->
     <div class="half fourth-1000"></div>
     <!-- Main container -->
-    <div class="full half-1000">
+    <div class="full half-1000" style="width: 80%; margin: auto;">
+      <div style="text-align: right;">
+        <a href="{% url 'update_odontogram' pk_mouth=odontogram.id %}">
+          <button class="info">Vista con imágenes</button>
+        </a>
+      </div>
       <article class="card" style="text-align: center;">
         <header>
           <h2 align="center" style="color: #0066ff;">Versión con códigos</h2>
@@ -648,30 +653,55 @@
           </div>
         </form><br>
         <!-- legend -->
-        <div class="half third-900">
-          Sano <img src="{% static 'img/sano.png' %}" alt="tooth" width="30" height="30"><br>
-          Caries <img src="{% static 'img/c1.png' %}" alt="tooth" width="30" height="30">
-          <img src="{% static 'img/c2.png' %}" alt="tooth" width="30" height="30">
-          <img src="{% static 'img/c3.png' %}" alt="tooth" width="30" height="30">
-          <img src="{% static 'img/c4.png' %}" alt="tooth" width="30" height="30">
-          <img src="{% static 'img/c5.png' %}" alt="tooth" width="30" height="30"><br>
-          Restauración <img src="{% static 'img/r1.png' %}" alt="tooth" width="30" height="30">
-          <img src="{% static 'img/r2.png' %}" alt="tooth" width="30" height="30">
-          <img src="{% static 'img/r3.png' %}" alt="tooth" width="30" height="30">
-          <img src="{% static 'img/r4.png' %}" alt="tooth" width="30" height="30">
-          <img src="{% static 'img/r5.png' %}" alt="tooth" width="30" height="30"><br>
-          Para extracción <img src="{% static 'img/p.png' %}" alt="tooth" width="30" height="30"><br>
-          Extracción <img src="{% static 'img/e.png' %}" alt="tooth" width="30" height="30"><br>
-          Endodoncia <img src="{% static 'img/N.png' %}" alt="tooth" width="30" height="30"><br>
-          Pulpa con lesión <img src="{% static 'img/PL.png' %}" alt="tooth" width="30" height="30"><br>
-          Sarro <img src="{% static 'img/z.png' %}" alt="tooth" width="30" height="30"><br>
-          Desgaste <img src="{% static 'img/d.png' %}" alt="tooth" width="30" height="30"><br>
-          Prótesis <img src="{% static 'img/g.png' %}" alt="tooth" width="30" height="30"> <br>
+        
+        <div id="legend" style="display: none;">
+          <table class="half third-900" style="margin: 0 auto; width: 100%;">
+            <tr>
+              <td>Sano</td>
+              <td><img src="{% static 'img/sano.png' %}" alt="tooth" width="30" height="30"></td>
+              <td>Caries</td>
+              <td>
+                <img src="{% static 'img/c1.png' %}" alt="tooth" width="30" height="30">
+                <img src="{% static 'img/c2.png' %}" alt="tooth" width="30" height="30">
+                <img src="{% static 'img/c3.png' %}" alt="tooth" width="30" height="30">
+                <img src="{% static 'img/c4.png' %}" alt="tooth" width="30" height="30">
+                <img src="{% static 'img/c5.png' %}" alt="tooth" width="30" height="30">
+              </td>
+              <td>Restauración</td>
+              <td>
+                <img src="{% static 'img/r1.png' %}" alt="tooth" width="30" height="30">
+                <img src="{% static 'img/r2.png' %}" alt="tooth" width="30" height="30">
+                <img src="{% static 'img/r3.png' %}" alt="tooth" width="30" height="30">
+                <img src="{% static 'img/r4.png' %}" alt="tooth" width="30" height="30">
+                <img src="{% static 'img/r5.png' %}" alt="tooth" width="30" height="30">
+              </td>
+            </tr>
+            <tr>
+              <td>Para extracción</td>
+              <td><img src="{% static 'img/p.png' %}" alt="tooth" width="30" height="30"></td>
+              <td>Extracción</td>
+              <td><img src="{% static 'img/e.png' %}" alt="tooth" width="30" height="30"></td>
+              <td>Endodoncia</td>
+              <td><img src="{% static 'img/N.png' %}" alt="tooth" width="30" height="30"></td>
+            </tr>
+            <tr>
+              <td>Pulpa con lesión</td>
+              <td><img src="{% static 'img/PL.png' %}" alt="tooth" width="30" height="30"></td>
+              <td>Sarro</td>
+              <td><img src="{% static 'img/z.png' %}" alt="tooth" width="30" height="30"></td>
+              <td>Desgaste</td>
+              <td><img src="{% static 'img/d.png' %}" alt="tooth" width="30" height="30"></td>
+            </tr>
+            <tr>
+              <td>Prótesis</td>
+              <td><img src="{% static 'img/g.png' %}" alt="tooth" width="30" height="30"></td>
+              <td colspan="4"></td>
+            </tr>
+          </table>
         </div>
+        <hr>
         <footer>
-          <a href="{% url 'update_odontogram' pk_mouth=odontogram.id %}">
-            <button class="warning">Vista con imágenes</button>
-          </a>
+          <button onclick="toggleLegend()" class="warning">Mostrar/Ocultar Leyenda</button>
         </footer>
       </article>
     </div>
@@ -679,4 +709,17 @@
     <div class="half fourth-1000"></div>
   </div>
 </div>
+
+<script>
+  function toggleLegend() {
+    var legend = document.getElementById("legend");
+    if (legend.style.display === "none") {
+      legend.style.display = "block";
+    } else {
+      legend.style.display = "none";
+    }
+  }
+</script>
 {% endblock %}
+
+

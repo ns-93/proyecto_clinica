@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<br><br>
+
 <div class="container">
   <div class="flex four demo">
     <!-- Empty container -->
@@ -11,9 +11,9 @@
     <div class="full half-1000" style="width: 80%; margin: auto;">
       <div style="text-align: right;">
         <a href="{% url 'odontogram_in_codes' pk_mouth=odontogram.id %}">
-            <button class="success">Vista geometrica dental</button>
+            <button class="info">Vista geometrica dental</button>
         </a>
-    </div>
+      </div>
       <div class="card" style="text-align: center;">
         <header>
           <h2 align="center" style="color: #0066ff;">Vista cuadrantes e identifica cada pieza con un número</h2>
