@@ -41,17 +41,17 @@ class RegisterForm(UserCreationForm):
 
 # Formulario de actualización de usuario
 class UserForm(forms.ModelForm):
-        class Meta:
-            model = User
-            fields = ['first_name', 'last_name']  # Define los campos a mostrar en el formulario de actualización de usuario
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']  # Eliminar 'rut' del formulario
 
 # Formulario de perfil de usuario
 class ProfileForm(forms.ModelForm):
-        class Meta:
-            # Utiliza el modelo Profile (perfil de usuario personalizado)
-            # Define los campos de perfil que se pueden actualizar
-            model = Profile
-            fields = ['image', 'address', 'location', 'telephone', 'rut']    
+    class Meta:
+        # Utiliza el modelo Profile (perfil de usuario personalizado)
+        # Define los campos de perfil que se pueden actualizar
+        model = Profile
+        fields = ['image', 'address', 'location', 'telephone', 'rut']  # Añadir 'rut' al formulario
 
 
 # Formulario de servicios

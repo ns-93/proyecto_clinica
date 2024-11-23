@@ -17,7 +17,7 @@
                         <p><strong>Localidad: </strong>{{ user.profile.location }} </p>
                         <p><strong>Teléfono:  </strong>{{ user.profile.telephone }}</p>
                         <p><strong>Correo electrónico:  </strong>{{ user.email }}</p>
-                        <p><strong>RUT: </strong>{{ user.rut }}</p>
+                        <p><strong>RUT: </strong>{{ user.profile.rut }}</p>
                         <hr>
                         {% if request.user.is_superuser %}
                             <a class="btn btn-warning w-100 mb-1" href="{% url 'admin:index' %}">Ir al Admin</a>
@@ -103,18 +103,18 @@
                             
                                 <div class="mb-3 mr-2">
                                     <label for="telephone">Teléfono</label>
-                                    <input type="text" class="form-control" name="telephone" value="{{ user.profile.telephone }}">
+                                    <input type="text" class="form-control" name="telephone" value="{{ user.profile.telephone|default_if_none:'' }}">
                                 </div>
                                 <hr>
 
                                 <div class="mb-3">
                                     <label for="email">Email</label>
-                                    <input type="text" class="form-control" name="email" value="{{ user.email }}" disabled>
+                                    <input type="text" class="form-control" name="email" value="{{ user.email }}">
                                 </div>
                                 <hr>
                                 <div class="mb-3">
                                     <label for="rut">RUT</label>
-                                    <input type="text" class="form-control" name="rut" value="{{ user.rut }}" disabled>
+                                    <input type="text" class="form-control" name="rut" value="{{ user.profile.rut }}">
                                 </div>
                             
                         </div>

@@ -89,20 +89,19 @@
                             <input type="text" class="form-control" name="location" value="{{ user_profile.profile.location }}">
                         </div>
 
-                        
-                            <div class="mb-3 mr-2">
-                                <label for="telephone">Teléfono</label>
-                                <input type="text" class="form-control" name="telephone" value="{{ user_profile.profile.telephone }}">
-                            </div>
+                        <div class="mb-3">
+                            <label for="telephone">Teléfono</label>
+                            <input type="text" class="form-control" name="telephone" value="{{ user_profile.profile.telephone|default_if_none:'' }}">
+                        </div>
 
-                            <div class="mb-3">
-                                <label for="email">Email</label>
-                                <input type="text" class="form-control" name="email" value="{{ user_profile.email }}" disabled>
-                            </div>
-                        
+                        <div class="mb-3">
+                            <label for="email">Email</label>
+                            <input type="text" class="form-control" name="email" value="{{ user_profile.email }}">
+                        </div>
+
                         <div class="form-group">
                             <label for="rut" class="form-label">RUT</label>
-                            <input type="text" name="rut" id="rut" class="form-control" value="{{ user.profile.rut }}">
+                            <input type="text" name="rut" id="rut" class="form-control" value="{{ user_profile.profile.rut }}">
                         </div>
 
                         <div class="mb-3">
