@@ -53,6 +53,12 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ['image', 'address', 'location', 'telephone', 'rut']  # Añadir 'rut' al formulario
 
+    def clean_rut(self):
+        rut = self.cleaned_data.get('rut')
+        if Profile.objects.filter(rut=rut).exists():
+            raise forms.ValidationError('Este RUT ya está registrado. Si cree que es un error, contacte a la administración.')
+        return rut
+
 
 # Formulario de servicios
 class ServiciosForm(forms.ModelForm):

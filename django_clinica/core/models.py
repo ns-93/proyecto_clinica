@@ -224,3 +224,15 @@ class Reserva(models.Model):
         verbose_name = 'reserva'
         verbose_name_plural = 'reservas'
         unique_together = ('profesional', 'fecha', 'hora')
+        
+#modelo de preguntas y respuestas
+
+class Question(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Answer(models.Model):
+    question = models.OneToOneField(Question, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

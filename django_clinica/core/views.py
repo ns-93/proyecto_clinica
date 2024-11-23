@@ -18,6 +18,7 @@ from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm, UserCreat
 from .models import Servicios, RegistroServicio, Infocliente, Asistencia, Mouth, Reserva
 from accounts.models import Profile
 from . import forms
+from .models import Question, Answer
 # Create your views here.
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
@@ -802,14 +803,18 @@ def superuser_edit(request, user_id):
 
         # Verificar si los formularios son válidos
         if user_form.is_valid() and profile_form.is_valid():
-            # Guardar los formularios
-            user_form.save()
-            profile_form.save()
-            # Actualizar los grupos del usuario
-            user.groups.clear()
-            user.groups.add(group)
-            # Redirigir a la página de detalles del usuario
-            return redirect('usuario_detalles', pk=user.id)
+            try:
+                # Guardar los formularios
+                user_form.save()
+                profile_form.save()
+                # Actualizar los grupos del usuario
+                user.groups.clear()
+                user.groups.add(group)
+                # Redirigir a la página de detalles del usuario
+                return redirect('usuario_detalles', pk=user.id)
+            except forms.ValidationError as e:
+                profile_form.add_error('rut', e)
+
     else:
         # Crear formularios con los datos actuales del usuario
         user_form = UserForm(instance=user)
@@ -1272,3 +1277,32 @@ class ReservaDeleteView(UserPassesTestMixin, DeleteView):
 def reservas_profesionales(request):
     reservas = Reserva.objects.all()
     return render(request, 'reservas_profesionales.html', {'reservas': reservas})
+
+#vista de preguntas frecuentes
+
+class FaqView(View):
+    def get(self, request):
+        questions = Question.objects.all()
+        group_name = None
+        if request.user.is_authenticated:
+            group = request.user.groups.first()
+            if group:
+                group_name = group.name
+        return render(request, 'faq.html', {'questions': questions, 'group_name': group_name})
+
+class PostQuestionView(LoginRequiredMixin, View):
+    def post(self, request):
+        question_text = request.POST.get('question')
+        Question.objects.create(user=request.user, text=question_text)
+        return redirect('faq')
+
+class PostAnswerView(LoginRequiredMixin, View):
+    def post(self, request, question_id):
+        if request.user.groups.filter(name='ejecutivos').exists():
+            answer_text = request.POST.get('answer')
+            question = Question.objects.get(id=question_id)
+            Answer.objects.create(question=question, text=answer_text)
+            messages.success(request, 'Respuesta publicada exitosamente.')
+        else:
+            messages.error(request, 'No tienes permiso para publicar una respuesta.')
+        return redirect('faq')

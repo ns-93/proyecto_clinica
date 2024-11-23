@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="display-4 fw-normal text-body-emphasis text-center">Preguntas y Respuestas</h1>
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Publicar una Pregunta</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'post_question' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="question" class="form-label">Tu Pregunta</label>
+                            <textarea class="form-control" id="question" name="question" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Publicar</button>
+                    </form>
+                </div>
+            </div>
+            <h4>Preguntas Recientes</h4>
+            {% for question in questions %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>{{ question.user.username }} preguntó:</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ question.text }}</p>
+                    {% if question.answer %}
+                    <div class="alert alert-success">
+                        <strong>Respuesta:</strong> {{ question.answer.text }}
+                    </div>
+                    {% elif user.is_authenticated and group_name == 'ejecutivos' %}
+                    <form method="post" action="{% url 'post_answer' question.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="answer" class="form-label">Responder</label>
+                            <textarea class="form-control" id="answer" name="answer" rows="2" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">Responder</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

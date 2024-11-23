@@ -43,9 +43,10 @@
                 <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li>  <!-- Enlace a la página de inicio -->
                 <li><a href="{% url 'servicios' %}" class="nav-link px-2 text-white">Servicios</a></li>  <!-- Enlace a la página de servicios -->
 
-                {% if not user.is_authenticated or group_name == 'clientes' %}  <!-- Si el usuario no está autenticado o es un cliente -->
+                {% if group_name == 'clientes' or group_name == 'ejecutivos' %}  <!-- Si el usuario es administrador, ejecutivo o profesional -->
+                <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>  <!-- Enlace a la página de precios --><!-- Si el usuario no está autenticado o es un cliente -->
                 <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>  <!-- Enlace a la página de precios -->
-                <li><a href="#" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li>  <!-- Enlace a la sección de preguntas y respuestas -->
+                <li><a href="{% url 'faq' %}" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li>  <!-- Enlace a la sección de preguntas y respuestas -->
                 <li><a href="#" class="nav-link px-2 text-white">Acerca de</a></li>  <!-- Enlace a la sección 'Acerca de' -->
                 {% endif %}
             </ul>  <!-- Fin del menú de navegación -->
