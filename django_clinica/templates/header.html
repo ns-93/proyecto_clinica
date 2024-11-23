@@ -1,17 +1,17 @@
-{% if user.is_authenticated %}  <!-- Verifica si el usuario está autenticado -->
-    {% if group_name == 'clientes' %}  <!-- Si el usuario pertenece al grupo 'clientes' -->
-        <header class="p-3 text-bg-dark bg-primary">  <!-- Cabecera con fondo azul para 'clientes' -->
-    {% elif group_name == 'profesionales' %}  <!-- Si el usuario pertenece al grupo 'profesionales' -->
-        <header class="p-3 text-bg-dark bg-success">  <!-- Cabecera con fondo verde para 'profesionales' -->
-    {% elif group_name == 'ejecutivos' %}  <!-- Si el usuario pertenece al grupo 'ejecutivos' -->
-        <header class="p-3 text-bg-dark bg-danger">  <!-- Cabecera con fondo rojo para 'ejecutivos' -->
-    {% elif group_name == 'administradores' %}  <!-- Si el usuario pertenece al grupo 'administradores' -->
-        <header class="p-3 text-bg-dark bg-info">  <!-- Cabecera con fondo azul claro para 'administradores' -->
-    {% else %}  <!-- Si el grupo no coincide con ninguno de los anteriores -->
-        <header class="p-3 text-bg-dark bg-dark">  <!-- Cabecera con fondo oscuro por defecto -->
+{% if user.is_authenticated %}
+    {% if group_name == 'clientes' %}
+        <header class="p-3 text-bg-dark bg-primary">
+    {% elif group_name == 'profesionales' %}
+        <header class="p-3 text-bg-dark bg-success">
+    {% elif group_name == 'ejecutivos' %}
+        <header class="p-3 text-bg-dark bg-danger">
+    {% elif group_name == 'administradores' %}
+        <header class="p-3 text-bg-dark bg-info">
+    {% else %}
+        <header class="p-3 text-bg-dark bg-dark">
     {% endif %}
-{% else %}  <!-- Si el usuario no está autenticado -->
-    <header class="p-3 text-bg-dark bg-black">  <!-- Cabecera con fondo negro para usuarios no autenticados -->
+{% else %}
+    <header class="p-3 text-bg-dark bg-black">
 {% endif %}
 
     <div class="container">  <!-- Contenedor general de la cabecera -->
@@ -43,10 +43,10 @@
                 <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li>  <!-- Enlace a la página de inicio -->
                 <li><a href="{% url 'servicios' %}" class="nav-link px-2 text-white">Servicios</a></li>  <!-- Enlace a la página de servicios -->
 
-                {% if not user.is_authenticated or group_name == 'clientes' %}  <!-- Si el usuario no está autenticado o es un cliente -->
-                <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>  <!-- Enlace a la página de precios -->
-                <li><a href="#" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li>  <!-- Enlace a la sección de preguntas y respuestas -->
-                <li><a href="#" class="nav-link px-2 text-white">Acerca de</a></li>  <!-- Enlace a la sección 'Acerca de' -->
+                {% if not user.is_authenticated or group_name == 'clientes' or group_name == 'ejecutivos' %}  <!-- Si el usuario no está autenticado o es cliente o ejecutivo -->
+                <li><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>  <!-- Enlace a la página de precios --> <!-- Enlace a la página de precios -->
+                <li><a href="{% url 'faq' %}" class="nav-link px-2 text-white">Preguntas y Respuestas</a></li>  <!-- Enlace a la sección de preguntas y respuestas -->
+                <li><a href="{% url 'about' %}" class="nav-link px-2 text-white">Acerca de</a></li>  <!-- Enlace a la sección 'Acerca de' -->
                 {% endif %}
             </ul>  <!-- Fin del menú de navegación -->
 

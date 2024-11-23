@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView
+from django.contrib.auth import views as auth_views
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView, FaqView, PostQuestionView, PostAnswerView, AboutView, EditAboutView, AddAboutView
 from django.contrib.auth.decorators import login_required
+from .forms import CustomPasswordResetForm  # Importar CustomPasswordResetForm
 
 # Definición de las rutas o URLs para la aplicación
 urlpatterns = [
@@ -53,21 +55,37 @@ urlpatterns = [
     # Página para editar el perfil de un usuario por un superusuario
     path('superuser_edit/<int:user_id>/', login_required(superuser_edit), name='superuser_edit'),
     
-    # Página para solicitar odontograma
-    path('new/', new_odontogram, name='new_odontogram'),
-    path('tooth/<int:pk_mouth>/<str:nb_tooth>/', tooth_view, name='tooth'),
-    path('update/<int:pk_mouth>/', update_odonto, name='update_odontogram'),
-    path('view/<int:pk_mouth>/', view_odonto, name='odontogram_in_codes'),
+        # Página para solicitar odontograma
+    path('new/', login_required(new_odontogram), name='new_odontogram'),
+    path('tooth/<int:pk_mouth>/<str:nb_tooth>/', login_required(tooth_view), name='tooth'),
+    path('update/<int:pk_mouth>/', login_required(update_odonto), name='update_odontogram'),
+    path('view/<int:pk_mouth>/', login_required(view_odonto), name='odontogram_in_codes'),
     
     # Rutas para las vistas de reservas
-    path('reservas/', ReservaListView.as_view(), name='reservas'),
-    path('reservas/nueva/', ReservaCreateView.as_view(), name='crear_reserva'),
-    path('reservas/<int:pk>/editar/', ReservaUpdateView.as_view(), name='editar_reserva'),
-    path('reservas/<int:pk>/eliminar/', ReservaDeleteView.as_view(), name='eliminar_reserva'),
-    path('reservar_hora/<int:reserva_id>/', ReservarHoraView.as_view(), name='reservar_hora'),
-    path('reservas/<int:pk>/eliminar_cliente/', ReservaDeleteClienteView.as_view(), name='eliminar_reserva_cliente'),
-    path('reservas_disponibles/', ReservaListView.as_view(), name='reservas_disponibles'),
-    path('reservas_profesionales/', reservas_profesionales, name='reservas_profesionales'),
+    path('reservas/', login_required(ReservaListView.as_view()), name='reservas'),
+    path('reservas/nueva/', login_required(ReservaCreateView.as_view()), name='crear_reserva'),
+    path('reservas/<int:pk>/editar/', login_required(ReservaUpdateView.as_view()), name='editar_reserva'),
+    path('reservas/<int:pk>/eliminar/', login_required(ReservaDeleteView.as_view()), name='eliminar_reserva'),
+    path('reservar_hora/<int:reserva_id>/', login_required(ReservarHoraView.as_view()), name='reservar_hora'),
+    path('reservas/<int:pk>/eliminar_cliente/', login_required(ReservaDeleteClienteView.as_view()), name='eliminar_reserva_cliente'),
+    path('reservas_disponibles/', login_required(ReservaListView.as_view()), name='reservas_disponibles'),
+    path('reservas_profesionales/', login_required(reservas_profesionales), name='reservas_profesionales'),
+    
+    # Página de preguntas y respuestas
+    path('faq/', FaqView.as_view(), name='faq'),
+    path('faq/post_question/', PostQuestionView.as_view(), name='post_question'),
+    path('faq/post_answer/<int:question_id>/', PostAnswerView.as_view(), name='post_answer'),
+    
+    # Página de información sobre nosotros
+    path('about/', AboutView.as_view(), name='about'),
+    path('about/edit/<int:pk>/', login_required(EditAboutView.as_view()), name='edit_about'),
+    path('about/add/', login_required(AddAboutView.as_view()), name='add_about'),
+
+    # Rutas para la recuperación de contraseña
+    path('password_reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html', form_class=CustomPasswordResetForm), name='password_reset'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
 ]
 
 
