@@ -2,9 +2,10 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from accounts.models import Profile
-from .models import Servicios, Mouth
+from .models import Servicios, Mouth, Reserva
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit
+from django.utils import timezone
 
 
 # Formulario de inicio de sesión heredado de AuthenticationForm de Django
@@ -796,3 +797,19 @@ class T85Form(forms.ModelForm):
     class Meta:
         model = Mouth
         fields = ['t_85', ]
+
+
+class ReservaForm(forms.ModelForm):
+    class Meta:
+        model = Reserva
+        fields = ['fecha', 'hora']
+        widgets = {
+            'fecha': forms.DateInput(attrs={'type': 'date'}),
+            'hora': forms.TimeInput(attrs={'type': 'time'}),
+        }
+
+    def clean_fecha(self):
+        fecha = self.cleaned_data.get('fecha')
+        if fecha < timezone.now().date():
+            raise forms.ValidationError('No se puede crear una reserva en una fecha pasada.')
+        return fecha

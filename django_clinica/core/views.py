@@ -14,8 +14,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView, ListView, DetailView
 
-from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm, UserCreationForm
-from .models import Servicios, RegistroServicio, Infocliente, Asistencia, Mouth
+from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm, UserCreationForm, ReservaForm
+from .models import Servicios, RegistroServicio, Infocliente, Asistencia, Mouth, Reserva
 from accounts.models import Profile
 from . import forms
 # Create your views here.
@@ -143,6 +143,8 @@ class ProfileView(TemplateView):
             context['inscription_services'] = assigned_services.filter(status='S')
             context['progress_services'] = assigned_services.filter(status='P')
             context['finalized_services'] = assigned_services.filter(status='F')
+            # Obtener todas las reservas del profesional
+            context['reservas'] = Reserva.objects.filter(profesional=user)
 
         elif user.groups.filter(name='clientes').exists():
             # Obtener todos los servicios donde el cliente está inscrito
@@ -172,7 +174,8 @@ class ProfileView(TemplateView):
                 'servicios_solicitud': servicios_solicitud,
                 'servicios_progreso': servicios_progreso,
                 'servicios_finalizados': servicios_finalizados,
-                'cliente_id': user.id
+                'cliente_id': user.id,
+                'reservas': Reserva.objects.filter(cliente=user)  # Agregar reservas del cliente
             })
 
         elif user.groups.filter(name='ejecutivos').exists():
@@ -248,7 +251,7 @@ class ServiciosView(TemplateView):
         cliente = self.request.user if self.request.user.is_authenticated else None
 
         for item in servicios:
-            if cliente:
+            if (cliente):
                 # importar RegistroServicio y Verifica si el cliente ya está registrado en el servicio
                 registration = RegistroServicio.objects.filter(servicio=item, cliente=cliente).first()
                 item.is_enrolled = registration is not None
@@ -391,10 +394,10 @@ class ServicioEnrollmentView(View):
                 registro = RegistroServicio(servicio=servicio, cliente=cliente)
                 registro.save()  # Guardamos el registro en la base de datos
 
-                messages.success(request, 'Se a solicitado correctamente este servicio Gracias')
+                messages.success(request, 'Se ha solicitado correctamente este servicio. Gracias.')
         else:
             # Si no está autenticado o no pertenece al grupo adecuado, mostramos un mensaje de error
-            messages.error(request, 'No se pudo completar la Solicitud. Debes ser un cliente para Solicitar este servicio.')
+            messages.error(request, 'No se pudo completar la solicitud. Debes ser un cliente para solicitar este servicio.')
 
         # Redirige al usuario a la lista de servicios
         return redirect('servicios')  # Redirige a la vista de servicios
@@ -823,16 +826,11 @@ def superuser_edit(request, user_id):
 
 
 #odontograma
-
-def ask_odontogram(request):
-    return render(request, 'odontogram/odontogram.html')
-
-
 def new_odontogram(request):
     odontogram = Mouth.objects.create()
     # append odontogram to profile
     if request.method == 'POST':
-        return redirect('record:tooth', pk_mouth=odontogram.id)
+        return redirect('tooth', pk_mouth=odontogram.id)
     return render(request, 'odontogram/odontogram.html', {
         'odontogram': odontogram,
         }
@@ -1145,5 +1143,132 @@ def view_odonto(request, pk_mouth):
         }
     )
 
+@add_group_name_to_context
+class ReservaCreateView(UserPassesTestMixin, CreateView):
+    model = Reserva
+    form_class = ReservaForm
+    template_name = 'create_reserva.html'
+    success_url = reverse_lazy('reservas_profesionales')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='profesionales').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        reserva = form.save(commit=False)
+        reserva.profesional = self.request.user
+        reserva.save()
+        messages.success(self.request, 'La reserva se ha creado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al crear la reserva.')
+        return self.render_to_response(self.get_context_data(form=form))
 
 
+@add_group_name_to_context
+class ReservaListView(LoginRequiredMixin, ListView):
+    model = Reserva
+    template_name = 'reservas.html'
+    context_object_name = 'reservas'
+
+    def get_queryset(self):
+        if self.request.user.groups.filter(name='profesionales').exists():
+            return Reserva.objects.filter(profesional=self.request.user)
+        elif self.request.user.groups.filter(name='clientes').exists():
+            return Reserva.objects.filter(cliente=self.request.user)
+        return Reserva.objects.none()
+
+@add_group_name_to_context
+class ReservaListView(LoginRequiredMixin, ListView):
+    model = Reserva
+    template_name = 'reservas_disponibles.html'
+    context_object_name = 'reservas'
+
+    def get_queryset(self):
+        return Reserva.objects.filter(cliente__isnull=True)
+
+# Vista para que el cliente reserve una hora
+@add_group_name_to_context
+class ReservarHoraView(LoginRequiredMixin, View):
+    def get(self, request, reserva_id):
+        reserva = get_object_or_404(Reserva, id=reserva_id)
+        if request.user.groups.filter(name='clientes').exists() and not reserva.cliente:
+            if not Reserva.objects.filter(cliente=request.user).exists():
+                reserva.cliente = request.user
+                reserva.save()
+                messages.success(request, 'Hora reservada exitosamente.')
+            else:
+                messages.error(request, 'Ya tienes una reserva activa.')
+        else:
+            messages.error(request, 'No se pudo reservar la hora.')
+        return redirect('profile')
+
+@add_group_name_to_context
+class ReservaDeleteClienteView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def get_object(self):
+        return get_object_or_404(Reserva, id=self.kwargs['pk'])
+
+    def get(self, request, *args, **kwargs):
+        reserva = self.get_object()
+        if self.request.user == reserva.cliente:
+            reserva.cliente = None
+            reserva.save()
+            messages.success(self.request, 'La reserva se ha anulado correctamente.')
+        else:
+            messages.error(self.request, 'No tienes permiso para anular esta reserva.')
+        return redirect('profile')
+
+    def test_func(self):
+        reserva = self.get_object()
+        return self.request.user == reserva.cliente
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+@add_group_name_to_context
+class ReservaUpdateView(UserPassesTestMixin, UpdateView):
+    model = Reserva
+    form_class = ReservaForm
+    template_name = 'update_reserva.html'
+    success_url = reverse_lazy('reservas_profesionales')
+
+    def test_func(self):
+        reserva = self.get_object()
+        return self.request.user == reserva.profesional
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'La reserva se ha actualizado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al actualizar la reserva.')
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+@add_group_name_to_context
+class ReservaDeleteView(UserPassesTestMixin, DeleteView):
+    model = Reserva
+    template_name = 'delete_reserva.html'
+    success_url = reverse_lazy('reservas_profesionales')
+
+    def test_func(self):
+        reserva = self.get_object()
+        return self.request.user == reserva.profesional
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'La reserva se ha eliminado correctamente.')
+        return super().delete(request, *args, **kwargs)
+
+
+def reservas_profesionales(request):
+    reservas = Reserva.objects.all()
+    return render(request, 'reservas_profesionales.html', {'reservas': reservas})
