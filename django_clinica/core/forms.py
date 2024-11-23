@@ -63,7 +63,7 @@ class ProfileForm(forms.ModelForm):
 # Formulario de servicios
 class ServiciosForm(forms.ModelForm):
     # Campo de selección para elegir un profesional del grupo 'profesionales'
-    profesional = forms.ModelChoiceField(queryset=User.objects.filter(groups__name='profesionales'), label='Profesional')
+    profesional = forms.ModelChoiceField(queryset=User.objects.filter(groups__name='profesionales'), label='Profesional', required=False)
     # Campo de selección para el estado del servicio
     status = forms.ChoiceField(choices=Servicios.STATUS_CHOICES, initial='S', label='Estado')
     # Campo de texto para la descripción del servicio con un widget personalizado
@@ -76,7 +76,14 @@ class ServiciosForm(forms.ModelForm):
         model = Servicios
         fields = ['name', 'description', 'profesional', 'n_procedimientos', 'status']
 
-# Configuración de diseño del formulario usando FormHelper (de django-crispy-forms)
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user and user.groups.filter(name='profesionales').exists():
+            self.fields['profesional'].queryset = User.objects.filter(id=user.id)
+            self.fields['profesional'].initial = user
+
+    # Configuración de diseño del formulario usando FormHelper (de django-crispy-forms)
     helper = FormHelper()
     helper.layout = Layout(
         Field('name'),

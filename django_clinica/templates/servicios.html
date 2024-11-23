@@ -52,6 +52,13 @@
                                 <p class="card-text"><strong>Cantidad de solicitantes: </strong>{{ servicio.enrollment_count }}</p>
                             {% endif %}
 
+                            <!-- Información del cliente asignado al servicio -->
+                            {% if servicio.cliente %}
+                                <p class="card-text">
+                                    <strong>Cliente: </strong>{{ servicio.cliente.first_name }} {{ servicio.cliente.last_name }}
+                                </p>
+                            {% endif %}
+
                             <!-- Estado del servicio: Finalizado, En progreso, o Disponible -->
                             {% if servicio.status == 'F' %}
                                 <h5><span class="badge bg-danger w-100">{{ servicio.get_status_display|upper }}</span></h5>

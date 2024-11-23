@@ -20,7 +20,8 @@ class Servicios(models.Model):
 
     name = models.CharField(max_length=100, verbose_name='Nombre del Servicio')  # Nombre del servicio
     description = models.TextField(blank=True, null=True, verbose_name='Descripción')  # Descripción opcional del servicio
-    profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional')  # Profesional asignado, relacionado con un usuario del grupo "profesionales"
+    profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional', related_name='servicios_profesional')  # Profesional asignado, relacionado con un usuario del grupo "profesionales"
+    cliente = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'clientes'}, verbose_name='Cliente', null=True, blank=True, related_name='servicios_cliente')
     n_procedimientos = models.PositiveIntegerField(default=0, verbose_name='Número de sesiones')  # Número de procedimientos o sesiones asociadas al servicio
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='S', verbose_name='Estado')  # Estado del servicio, utilizando las opciones definidas en STATUS_CHOICES
 

@@ -291,13 +291,33 @@ class ServicioCreateView(UserPassesTestMixin, CreateView):
     success_url = reverse_lazy('servicios')    # Redirige a la página de servicios después de crear un servicio
 
     def test_func(self):
-        # Permite solo a los administradores y ejecutivos crear un servicio
-        return self.request.user.groups.filter(name__in=['administradores', 'ejecutivos']).exists()
+        # Permite solo a los administradores, ejecutivos y profesionales crear un servicio
+        return self.request.user.groups.filter(name__in=['administradores', 'ejecutivos', 'profesionales']).exists()
 
     def handle_no_permission(self):
         return redirect('error') # Redirige a la página de error si no tiene permisos
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['clientes'] = User.objects.filter(groups__name='clientes')
+        if self.request.user.groups.filter(name='profesionales').exists():
+            context['profesional'] = self.request.user
+        return context
+
     def form_valid(self, form):
+        servicio = form.save(commit=False)
+        if self.request.user.groups.filter(name='profesionales').exists():
+            servicio.profesional = self.request.user
+        servicio.save()
+        cliente_id = self.request.POST.get('cliente')
+        if cliente_id:
+            cliente = User.objects.get(id=cliente_id)
+            RegistroServicio.objects.create(servicio=servicio, cliente=cliente)
         messages.success(self.request, 'El registro del servicio se ha guardado correctamente.')
         return super().form_valid(form)
 
@@ -330,12 +350,19 @@ class ServicioEditView(UserPassesTestMixin, UpdateView):
         # Redirige al usuario a una página de error si no tiene permisos
         return redirect('error')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['clientes'] = User.objects.filter(groups__name='clientes')
+        return context
+
     # Método para manejar el caso en el que el formulario es válido
     def form_valid(self, form):
-        # Guarda el formulario y muestra un mensaje de éxito
-        form.save()
+        servicio = form.save(commit=False)
+        cliente_id = self.request.POST.get('cliente')
+        if cliente_id:
+            cliente = User.objects.get(id=cliente_id)
+            RegistroServicio.objects.update_or_create(servicio=servicio, defaults={'cliente': cliente})
         messages.success(self.request, 'El servicio se ha actualizado correctamente')
-        # Redirige a la URL de éxito
         return redirect(self.success_url)
 
     # Método para manejar el caso en el que el formulario es inválido
