@@ -19,6 +19,8 @@ from .models import Servicios, RegistroServicio, Infocliente, Asistencia, Mouth,
 from accounts.models import Profile
 from . import forms
 from .models import Question, Answer
+from .models import About
+from .forms import AboutForm
 # Create your views here.
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
@@ -1306,3 +1308,60 @@ class PostAnswerView(LoginRequiredMixin, View):
         else:
             messages.error(request, 'No tienes permiso para publicar una respuesta.')
         return redirect('faq')
+
+# Vista para mostrar la información de "Acerca de"
+class AboutView(TemplateView):
+    template_name = 'about.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        about = About.objects.first()
+        context['about'] = about
+        if self.request.user.is_authenticated:
+            group = self.request.user.groups.first()
+            if group:
+                context['group_name'] = group.name
+        return context
+
+# Vista para editar la información de "Acerca de"
+@add_group_name_to_context
+class EditAboutView(UserPassesTestMixin, UpdateView):
+    model = About
+    form_class = AboutForm
+    template_name = 'edit_about.html'
+    success_url = reverse_lazy('about')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='ejecutivos').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'La información de "Acerca de" se ha actualizado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al actualizar la información de "Acerca de".')
+        return self.render_to_response(self.get_context_data(form=form))
+
+@add_group_name_to_context
+class AddAboutView(UserPassesTestMixin, CreateView):
+    model = About
+    form_class = AboutForm
+    template_name = 'add_about.html'
+    success_url = reverse_lazy('about')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='ejecutivos').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'La información de "Acerca de" se ha agregado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al agregar la información de "Acerca de".')
+        return self.render_to_response(self.get_context_data(form=form))

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from accounts.models import Profile
-from .models import Servicios, Mouth, Reserva
+from .models import Servicios, Mouth, Reserva, About
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit
 from django.utils import timezone
@@ -819,3 +819,9 @@ class ReservaForm(forms.ModelForm):
         if fecha < timezone.now().date():
             raise forms.ValidationError('No se puede crear una reserva en una fecha pasada.')
         return fecha
+
+
+class AboutForm(forms.ModelForm):
+    class Meta:
+        model = About
+        fields = ['mission', 'vision', 'values', 'contact_info', 'email', 'address', 'phone', 'images']

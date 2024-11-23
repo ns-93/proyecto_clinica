@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="display-4 fw-normal text-body-emphasis text-center">Acerca de Dental Knights</h1>
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            {% if about %}
+                <h2>Misión</h2>
+                <p>{{ about.mission }}</p>
+                <h2>Visión</h2>
+                <p>{{ about.vision }}</p>
+                <h2>Valores</h2>
+                <p>{{ about.values }}</p>
+                <h2>Información de Contacto</h2>
+                <p>{{ about.contact_info }}</p>
+                <p><strong>Email:</strong> {{ about.email }}</p>
+                <p><strong>Dirección:</strong> {{ about.address }}</p>
+                <p><strong>Teléfono:</strong> {{ about.phone }}</p>
+                <h2>Imágenes</h2>
+                {% if about.images %}
+                    <img src="{{ about.images.url }}" class="img-fluid" alt="Imágenes de Dental Knights">
+                {% else %}
+                    <p>No hay imágenes disponibles.</p>
+                {% endif %}
+                {% if user.is_authenticated and group_name == 'ejecutivos' %}
+                    <a href="{% url 'edit_about' about.id %}" class="btn btn-primary mt-3">Editar</a>
+                {% endif %}
+            {% else %}
+                <p>No hay información disponible sobre Dental Knights.</p>
+                {% if user.is_authenticated and group_name == 'ejecutivos' %}
+                    <a href="{% url 'add_about' %}" class="btn btn-secondary mt-3">Agregar</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
