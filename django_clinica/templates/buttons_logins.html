@@ -1,5 +1,3 @@
-
-
 <div class="text-center mt-3">  <!-- Contenedor con alineación centrada y margen superior -->
 
     {% if user.is_authenticated %}  <!-- Verifica si el usuario está autenticado (logueado) -->
@@ -12,8 +10,7 @@
     {% else %}  <!-- Si el usuario no está autenticado -->
     
         <a class="btn btn-lg btn-primary" href="{% url 'custom_login' %}">Iniciar Sesión</a>  <!-- Enlace a la página de inicio de sesión con un botón de color azul -->
-        <a class="btn btn-lg btn-warning" href="{% url 'register' %}">Registrarse</a>  <!-- Enlace a la página de registro con un botón de color amarillo -->
-    
+        <a class="btn btn-lg btn-warning" href="{% url 'register' %}">Registrarse</a>  <!-- Enlace a la página de registro con un botón de color amarillo --
     {% endif %}  <!-- Fin de la verificación de autenticación -->
     
 </div>

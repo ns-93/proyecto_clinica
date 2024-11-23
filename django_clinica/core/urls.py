@@ -1,6 +1,8 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView, FaqView, PostQuestionView, PostAnswerView, AboutView, EditAboutView, AddAboutView
 from django.contrib.auth.decorators import login_required
+from .forms import CustomPasswordResetForm  # Importar CustomPasswordResetForm
 
 # Definición de las rutas o URLs para la aplicación
 urlpatterns = [
@@ -78,6 +80,12 @@ urlpatterns = [
     path('about/', AboutView.as_view(), name='about'),
     path('about/edit/<int:pk>/', login_required(EditAboutView.as_view()), name='edit_about'),
     path('about/add/', login_required(AddAboutView.as_view()), name='add_about'),
+
+    # Rutas para la recuperación de contraseña
+    path('password_reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html', form_class=CustomPasswordResetForm), name='password_reset'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
 ]
 
 

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm
 from accounts.models import Profile
 from .models import Servicios, Mouth, Reserva, About
 from crispy_forms.helper import FormHelper
@@ -825,3 +825,17 @@ class AboutForm(forms.ModelForm):
     class Meta:
         model = About
         fields = ['mission', 'vision', 'values', 'contact_info', 'email', 'address', 'phone', 'images']
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(label='Correo electrónico', max_length=254)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({'class': 'form-control'})
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not User.objects.filter(email=email).exists():
+            raise forms.ValidationError('No existe una cuenta con este correo electrónico.')
+        return email
