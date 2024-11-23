@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm
 from accounts.models import Profile
-from .models import Servicios, Mouth, Reserva
+from .models import Servicios, Mouth, Reserva, About
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit
 from django.utils import timezone
@@ -41,17 +41,23 @@ class RegisterForm(UserCreationForm):
 
 # Formulario de actualización de usuario
 class UserForm(forms.ModelForm):
-        class Meta:
-            model = User
-            fields = ['first_name', 'last_name']  # Define los campos a mostrar en el formulario de actualización de usuario
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']  # Eliminar 'rut' del formulario
 
 # Formulario de perfil de usuario
 class ProfileForm(forms.ModelForm):
-        class Meta:
-            # Utiliza el modelo Profile (perfil de usuario personalizado)
-            # Define los campos de perfil que se pueden actualizar
-            model = Profile
-            fields = ['image', 'address', 'location', 'telephone', 'rut']    
+    class Meta:
+        # Utiliza el modelo Profile (perfil de usuario personalizado)
+        # Define los campos de perfil que se pueden actualizar
+        model = Profile
+        fields = ['image', 'address', 'location', 'telephone', 'rut']  # Añadir 'rut' al formulario
+
+    def clean_rut(self):
+        rut = self.cleaned_data.get('rut')
+        if Profile.objects.filter(rut=rut).exists():
+            raise forms.ValidationError('Este RUT ya está registrado. Si cree que es un error, contacte a la administración.')
+        return rut
 
 
 # Formulario de servicios
@@ -813,3 +819,23 @@ class ReservaForm(forms.ModelForm):
         if fecha < timezone.now().date():
             raise forms.ValidationError('No se puede crear una reserva en una fecha pasada.')
         return fecha
+
+
+class AboutForm(forms.ModelForm):
+    class Meta:
+        model = About
+        fields = ['mission', 'vision', 'values', 'contact_info', 'email', 'address', 'phone', 'images']
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(label='Correo electrónico', max_length=254)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({'class': 'form-control'})
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not User.objects.filter(email=email).exists():
+            raise forms.ValidationError('No existe una cuenta con este correo electrónico.')
+        return email

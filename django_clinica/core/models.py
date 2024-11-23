@@ -224,3 +224,32 @@ class Reserva(models.Model):
         verbose_name = 'reserva'
         verbose_name_plural = 'reservas'
         unique_together = ('profesional', 'fecha', 'hora')
+        
+#modelo de preguntas y respuestas
+
+class Question(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Answer(models.Model):
+    question = models.OneToOneField(Question, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class About(models.Model):
+    mission = models.TextField(verbose_name='Misión')
+    vision = models.TextField(verbose_name='Visión')
+    values = models.TextField(verbose_name='Valores')
+    contact_info = models.TextField(verbose_name='Información de Contacto')
+    email = models.EmailField(verbose_name='Email', null=True, blank=True)
+    address = models.CharField(max_length=255, verbose_name='Dirección', null=True, blank=True)
+    phone = models.CharField(max_length=20, verbose_name='Teléfono', null=True, blank=True)
+    images = models.ImageField(upload_to='about_images/', null=True, blank=True, verbose_name='Imágenes')
+
+    def __str__(self):
+        return "Acerca de Dental Knights"
+
+    class Meta:
+        verbose_name = 'Acerca de'
+        verbose_name_plural = 'Acerca de'
