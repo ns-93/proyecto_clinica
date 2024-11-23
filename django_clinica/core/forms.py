@@ -82,6 +82,8 @@ class ServiciosForm(forms.ModelForm):
         if user and user.groups.filter(name='profesionales').exists():
             self.fields['profesional'].queryset = User.objects.filter(id=user.id)
             self.fields['profesional'].initial = user
+        elif user and (user.groups.filter(name='administradores').exists() or user.groups.filter(name='ejecutivos').exists()):
+            self.fields['profesional'].required = True
 
     # Configuración de diseño del formulario usando FormHelper (de django-crispy-forms)
     helper = FormHelper()

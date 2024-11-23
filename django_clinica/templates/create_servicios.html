@@ -37,15 +37,6 @@
                         </select>
                     </div>
 
-                    {% if group_name == 'administradores' or group_name == 'ejecutivos' %}
-                        <div class="mb-3">
-                            <label for="profesional" class="form-label">Profesional</label>
-                            {{ form.profesional }}
-                        </div>
-                    {% elif group_name == 'profesionales' %}
-                        <input type="hidden" name="profesional" value="{{ profesional.id }}">
-                    {% endif %}
-
                     <!-- Enlaces de navegación -->
                     <a class="card-link" href="{% url 'home' %}">Inicio</a>  <!-- Enlace a la página principal -->
                     <a class="card-link" href="{% url 'servicios' %}">Servicios</a>  <!-- Enlace a la página de servicios -->
