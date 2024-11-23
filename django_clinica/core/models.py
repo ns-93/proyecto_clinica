@@ -208,5 +208,19 @@ class Mouth(models.Model):
     t_84 = models.CharField(max_length=90, default='sano')
     t_85 = models.CharField(max_length=90, default='sano')
 
-
 #hasa aqui llega el modelo de odontograma
+
+class Reserva(models.Model):
+    profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional', related_name='reservas_profesional')
+    cliente = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'clientes'}, verbose_name='Cliente', null=True, blank=True, related_name='reservas_cliente')
+    fecha = models.DateField(verbose_name='Fecha de la Reserva')
+    hora = models.TimeField(verbose_name='Hora de la Reserva')
+    pagada = models.BooleanField(default=False, verbose_name='Pagada')
+
+    def __str__(self):
+        return f"{self.profesional.get_full_name()} - {self.fecha} {self.hora}"
+
+    class Meta:
+        verbose_name = 'reserva'
+        verbose_name_plural = 'reservas'
+        unique_together = ('profesional', 'fecha', 'hora')

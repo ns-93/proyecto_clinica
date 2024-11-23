@@ -1,3 +1,20 @@
+.main-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Asegura que el contenedor ocupe al menos el 100% de la altura de la ventana */
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px; /* Ajusta este valor según sea necesario */
+  padding: 20px;
+}
+
+.card {
+  margin: auto;
+}
+
 .line1_p1 {
   position: absolute;
   top: 140px;

@@ -33,8 +33,10 @@
                     <!-- Evaluar grupo al que pertenece el usuario -->
                     {% if group_name_user == 'clientes' %}
                         {% include 'profile/clientes.html' %}
+                        <a class="btn btn-success w-100 mt-3" href="{% url 'reservas' %}">Reservar Hora</a>
                     {% elif group_name_user == 'profesionales' %}
                         {% include 'profile/profesionales.html' %}
+                        <a class="btn btn-success w-100 mt-3" href="{% url 'crear_reserva' %}">Crear Reserva</a>
                     {% elif group_name_user == 'ejecutivos' %}
                         {% include 'profile/ejecutivos.html' %}
                     {% endif %}

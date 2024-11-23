@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-3">
+    <h2>Reservar Hora</h2>
+    <hr>
+    <div class="row">
+        {% for reserva in reservas %}
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ reserva.profesional.get_full_name }}</h5>
+                        <p class="card-text"><strong>Fecha:</strong> {{ reserva.fecha }}</p>
+                        <p class="card-text"><strong>Hora:</strong> {{ reserva.hora }}</p>
+                        {% if not reserva.cliente %}
+                            <a href="{% url 'reservar_hora' reserva.id %}" class="btn btn-primary">Reservar</a>
+                        {% else %}
+                            <p class="text-success">Reservada</p>
+                        {% endif %}
+                        <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-warning">Editar</a>
+                        <a href="{% url 'eliminar_reserva' reserva.id %}" class="btn btn-danger">Eliminar</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <a href="{% url 'profile' %}" class="btn btn-secondary">Volver Atrás</a>
+</div>
+{% endblock %}

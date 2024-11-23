@@ -1,0 +1,50 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+}
+
+.footer-dark {
+    background-color: black;
+    color: white;
+}
+
+.footer-light {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.footer-full-width {
+    width: 100%;
+    padding: 10px 0; /* Ajusta el padding para reducir la altura */
+}
+
+.footer {
+    flex-shrink: 0;
+}
+
+.footer a {
+    color: white;
+}
+
+.footer a:hover {
+    color: #ccc;
+}
+
+.main-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Asegura que el contenedor ocupe al menos el 100% de la altura de la ventana */
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px; /* Ajusta este valor según sea necesario */
+    padding: 20px;
+}

@@ -1,6 +1,5 @@
-
 from django.urls import path
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, ask_odontogram, new_odontogram, tooth_view, update_odonto, view_odonto
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView
 from django.contrib.auth.decorators import login_required
 
 # Definición de las rutas o URLs para la aplicación
@@ -54,12 +53,21 @@ urlpatterns = [
     # Página para editar el perfil de un usuario por un superusuario
     path('superuser_edit/<int:user_id>/', login_required(superuser_edit), name='superuser_edit'),
     
-    path('ask/', ask_odontogram, name='ask_odontogram'),
+    # Página para solicitar odontograma
     path('new/', new_odontogram, name='new_odontogram'),
     path('tooth/<int:pk_mouth>/<str:nb_tooth>/', tooth_view, name='tooth'),
     path('update/<int:pk_mouth>/', update_odonto, name='update_odontogram'),
     path('view/<int:pk_mouth>/', view_odonto, name='odontogram_in_codes'),
     
+    # Rutas para las vistas de reservas
+    path('reservas/', ReservaListView.as_view(), name='reservas'),
+    path('reservas/nueva/', ReservaCreateView.as_view(), name='crear_reserva'),
+    path('reservas/<int:pk>/editar/', ReservaUpdateView.as_view(), name='editar_reserva'),
+    path('reservas/<int:pk>/eliminar/', ReservaDeleteView.as_view(), name='eliminar_reserva'),
+    path('reservar_hora/<int:reserva_id>/', ReservarHoraView.as_view(), name='reservar_hora'),
+    path('reservas/<int:pk>/eliminar_cliente/', ReservaDeleteClienteView.as_view(), name='eliminar_reserva_cliente'),
+    path('reservas_disponibles/', ReservaListView.as_view(), name='reservas_disponibles'),
+    path('reservas_profesionales/', reservas_profesionales, name='reservas_profesionales'),
 ]
-    
+
 
