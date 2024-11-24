@@ -16,7 +16,7 @@
                         <h4 class="my-0 fw-normal">Detalles del Pago</h4>
                     </div>
                     <div class="card-body">
-                        <form id="paymentForm" method="post" action="https://www.mercadopago.com/mla/checkout/start">
+                        <form id="paymentForm" method="post" action="{% url 'confirmar_pago' consulta.id %}">
                             {% csrf_token %}
                             <div class="mb-3">
                                 <label for="id_email" class="form-label">Email</label>
@@ -48,6 +48,8 @@
                             <input type="hidden" name="description" value="Consulta Dental">
                             <button type="submit" class="btn btn-primary">Pagar</button>
                         </form>
+                        <!-- Contenedor para el botón de pago -->
+                        <div id="wallet_container" class="mt-3"></div>
                     </div>
                 </div>
             </div>
@@ -55,32 +57,36 @@
     </main>
 </div>
 
-<script src="https://secure.mlstatic.com/sdk/javascript/v1/mercadopago.js"></script>
-<script>
-    window.Mercadopago.setPublishableKey('{{ MERCADOPAGO_PUBLIC_KEY }}');
+<!-- SDK MercadoPago.js V2 -->
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 
-    document.getElementById('paymentForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        window.Mercadopago.createToken(this, function(status, response) {
+<script>
+    // Configura tu Public Key
+    const mp = new MercadoPago('{{ MERCADOPAGO_PUBLIC_KEY }}', {
+        locale: 'es-CL'
+    });
+    
+    // Inicializa el checkout
+    mp.bricks().create("wallet", "wallet_container", {
+        initialization: {
+            preferenceId: "{{ consulta.preference_id }}"
+        }
+    });
+
+    // Función para crear el token de pago
+    function createToken(event) {
+        event.preventDefault();
+        mp.createToken(document.getElementById('paymentForm'), function(status, response) {
             if (status != 200 && status != 201) {
                 alert("Verifique los datos ingresados.");
             } else {
-                var form = document.getElementById('paymentForm');
-                var token = document.createElement('input');
-                token.setAttribute('name', 'token');
-                token.setAttribute('type', 'hidden');
-                token.setAttribute('value', response.id);
-                form.appendChild(token);
-
-                var paymentMethodId = document.createElement('input');
-                paymentMethodId.setAttribute('name', 'payment_method_id');
-                paymentMethodId.setAttribute('type', 'hidden');
-                paymentMethodId.setAttribute('value', response.card.payment_method.id);
-                form.appendChild(paymentMethodId);
-
-                form.submit();
+                document.getElementById('token').value = response.id;
+                document.getElementById('paymentForm').submit();
             }
         });
-    });
+    }
+
+    // Agregar evento al formulario
+    document.getElementById('paymentForm').addEventListener('submit', createToken);
 </script>
-{% endblock %} 
+{% endblock %}

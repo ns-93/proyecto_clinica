@@ -270,3 +270,4 @@ class Consulta(models.Model):
     profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional')
     pagada = models.BooleanField(default=False)
     precio = models.DecimalField(max_digits=10, decimal_places=2, default=50000)
+    preference_id = models.CharField(max_length=255, null=True, blank=True)

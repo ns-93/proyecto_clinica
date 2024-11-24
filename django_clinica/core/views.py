@@ -22,11 +22,16 @@ from .models import Question, Answer
 from .models import About
 from .forms import AboutForm
 import mercadopago
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+from dotenv import load_dotenv
+import json
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
+# Diccionario que mapea los nombres de grupos en plural a su forma singular
 def plural_to_singular(plural):
-    # Diccionario que mapea los nombres de grupos en plural a su forma singular
     plural_singular = {
         "clientes": "cliente",
         "profesionales": "profesional",
@@ -399,6 +404,22 @@ class ServicioDeleteView(UserPassesTestMixin, DeleteView):
         messages.success(self.request, 'El registro se ha eliminado correctamente')
         # Llama al método original form_valid() para continuar el proceso de eliminación
         return super().form_valid(form)
+
+    # Método que se ejecuta cuando la eliminación es inválida
+@add_group_name_to_context
+class ReservarHoraView(LoginRequiredMixin, View):
+    def get(self, request, reserva_id):
+        reserva = get_object_or_404(Reserva, id=reserva_id)
+        if request.user.groups.filter(name='clientes').exists() and not reserva.cliente:
+            if not Reserva.objects.filter(cliente=request.user).exists():
+                reserva.cliente = request.user
+                reserva.save()
+                messages.success(request, 'Hora reservada exitosamente.')
+            else:
+                messages.error(request, 'Ya tienes una reserva activa.')
+        else:
+            messages.error(request, 'No se pudo reservar la hora.')
+        return redirect('profile')
 
 #hasta aqui la eliminacion de un servicio ya creado
 
@@ -1225,7 +1246,72 @@ class ReservaListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Reserva.objects.filter(cliente__isnull=True)
 
-# Vista para que el cliente reserve una hora
+
+@add_group_name_to_context
+class ReservarConsultaView(UpdateView):
+    model = Consulta
+    form_class = ReservaConsultaForm
+    template_name = 'reservar_consulta.html'
+    success_url = reverse_lazy('confirmar_pago')
+
+    def form_valid(self, form):
+        consulta = form.save(commit=False)
+        consulta.nombre_completo = self.request.POST.get('nombre_completo')
+        consulta.rut = self.request.POST.get('rut')
+        consulta.telefono = self.request.POST.get('telefono')
+        consulta.email = self.request.POST.get('email')
+        consulta.pagada = False
+        consulta.save()
+        
+        # Crear preferencia de pago en MercadoPago
+        sdk = mercadopago.SDK(os.getenv('MERCADOPAGO_ACCESS_TOKEN'))
+        preference_data = {
+            "items": [
+                {
+                    "title": "Consulta Dental",
+                    "quantity": 1,
+                    "unit_price": float(consulta.precio)
+                }
+            ],
+            "payer": {
+                "name": consulta.nombre_completo,
+                "email": consulta.email
+            },
+            "back_urls": {
+                "success": self.request.build_absolute_uri(reverse('verificar_consulta')),
+                "failure": self.request.build_absolute_uri(reverse('verificar_consulta')),
+                "pending": self.request.build_absolute_uri(reverse('verificar_consulta'))
+            },
+            "auto_return": "approved",
+            "notification_url": self.request.build_absolute_uri(reverse('webhook'))
+        }
+        preference_response = sdk.preference().create(preference_data)
+        preference = preference_response["response"]
+        
+        # Guardar el ID de la preferencia en la consulta
+        consulta.preference_id = preference["id"]
+        consulta.save()
+        
+        return redirect('confirmar_pago', consulta_id=consulta.id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['consulta'] = self.get_object()
+        return context
+
+@add_group_name_to_context
+class CheckoutView(TemplateView):
+    template_name = 'checkout.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        preference_id = self.kwargs['preference_id']
+        consulta = get_object_or_404(Consulta, preference_id=preference_id)
+        context['consulta'] = consulta
+        context['preference_id'] = preference_id
+        context['MERCADOPAGO_PUBLIC_KEY'] = os.getenv('MERCADOPAGO_PUBLIC_KEY')
+        return context
+
 @add_group_name_to_context
 class ReservarHoraView(LoginRequiredMixin, View):
     def get(self, request, reserva_id):
@@ -1338,6 +1424,7 @@ class PostAnswerView(LoginRequiredMixin, View):
         return redirect('faq')
 
 # Vista para mostrar la información de "Acerca de"
+@add_group_name_to_context
 class AboutView(TemplateView):
     template_name = 'about.html'
 
@@ -1429,28 +1516,6 @@ class CrearConsultaView(CreateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 @add_group_name_to_context
-class ReservarConsultaView(UpdateView):
-    model = Consulta
-    form_class = ReservaConsultaForm
-    template_name = 'reservar_consulta.html'
-    success_url = reverse_lazy('confirmar_pago')
-
-    def form_valid(self, form):
-        consulta = form.save(commit=False)
-        consulta.nombre_completo = self.request.POST.get('nombre_completo')
-        consulta.rut = self.request.POST.get('rut')
-        consulta.telefono = self.request.POST.get('telefono')
-        consulta.email = self.request.POST.get('email')
-        consulta.pagada = False
-        consulta.save()
-        return redirect('confirmar_pago', consulta_id=consulta.id)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['consulta'] = self.get_object()
-        return context
-
-@add_group_name_to_context
 class ConfirmarPagoView(View):
     def get(self, request, consulta_id):
         consulta = get_object_or_404(Consulta, id=consulta_id)
@@ -1475,11 +1540,33 @@ class ConfirmarPagoView(View):
             payment = sdk.payment().create(payment_data)
             if payment['response']['status'] == 'approved':
                 consulta.pagada = True
+                consulta.nombre_completo = request.user.get_full_name()
+                consulta.rut = request.user.profile.rut
+                consulta.telefono = request.user.profile.telephone
+                consulta.email = request.user.email
                 consulta.save()
                 return redirect('verificar_consulta')
             else:
                 messages.error(request, 'Hubo un error en el pago.')
         return render(request, 'confirmar_pago.html', {'consulta': consulta, 'form': form})
+
+@csrf_exempt
+def webhook(request):
+    if request.method == 'POST':
+        try:
+            sdk = mercadopago.SDK(os.getenv('MERCADOPAGO_ACCESS_TOKEN'))
+            payment_info = request.POST
+            payment_id = payment_info.get('data.id')
+            payment = sdk.payment().get(payment_id)
+            status = payment['response']['status']
+            consulta_id = payment['response']['external_reference']
+            consulta = Consulta.objects.get(id=consulta_id)
+            if status == 'approved':
+                consulta.pagada = True
+                consulta.save()
+        except Exception as e:
+            print(f"Error: {str(e)}")
+    return HttpResponse(status=200)
 
 @add_group_name_to_context
 class VerificarConsultaView(View):
@@ -1494,3 +1581,40 @@ class VerificarConsultaView(View):
         else:
             messages.error(request, 'No se encontró una consulta pagada con ese RUT o no tiene consulta en curso actualmente.')
             return render(request, 'verificar_consulta.html')
+
+@add_group_name_to_context
+class EditarConsultaView(UserPassesTestMixin, UpdateView):
+    model = Consulta
+    form_class = ConsultaForm
+    template_name = 'editar_consulta.html'
+    success_url = reverse_lazy('consultas')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='ejecutivos').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'La consulta se ha actualizado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al actualizar la consulta.')
+        return self.render_to_response(self.get_context_data(form=form))
+
+@add_group_name_to_context
+class EliminarConsultaView(UserPassesTestMixin, DeleteView):
+    model = Consulta
+    template_name = 'eliminar_consulta.html'
+    success_url = reverse_lazy('consultas')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='ejecutivos').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'La consulta se ha eliminado correctamente.')
+        return super().delete(request, *args, **kwargs)

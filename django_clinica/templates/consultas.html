@@ -2,8 +2,11 @@
 
 {% block content %}
 <div class="container mt-3">
-    <div class="d-flex justify-content-start mb-3">
+    <div class="d-flex justify-content-between mb-3">
         <a href="{% url 'verificar_consulta' %}" class="btn btn-secondary">Consultar Consulta</a>
+        {% if group_name == 'ejecutivos' %}
+            <a href="{% url 'crear_consulta' %}" class="btn btn-primary">Crear Consulta</a>
+        {% endif %}
     </div>
     <div class="header p-3 pb-md-4 mx-auto text-center">
         <h1 class="display-4 fw-normal text-body-emphasis">Consultas Disponibles</h1>
@@ -32,6 +35,10 @@
                                                 <p class="card-text"><strong>Fecha:</strong> {{ consulta.fecha }}</p>
                                                 <p class="card-text"><strong>Hora:</strong> {{ consulta.hora }}</p>
                                                 <a href="{% url 'reservar_consulta' consulta.id %}" class="btn btn-outline-primary">Reservar</a>
+                                                {% if group_name == 'ejecutivos' %}
+                                                    <a href="{% url 'editar_consulta' consulta.id %}" class="btn btn-outline-warning mt-2">Editar</a>
+                                                    <a href="{% url 'eliminar_consulta' consulta.id %}" class="btn btn-outline-danger mt-2">Eliminar</a>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     {% endfor %}
