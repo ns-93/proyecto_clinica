@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm
 from accounts.models import Profile
-from .models import Servicios, Mouth, Reserva, About
+from .models import Servicios, Mouth, Reserva, About, Consulta
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit
 from django.utils import timezone
@@ -489,7 +489,7 @@ class T43Form(forms.ModelForm):
         fields = ['t_43', ]
 
 
-class T44Form(forms.ModelForm):
+class T44Form(forms.ModelForm):  # Corregir aquí
     t_44 = forms.MultipleChoiceField(
         choices=MOUTH_CHOICES,
         required=False,
@@ -848,3 +848,34 @@ class CustomPasswordResetForm(PasswordResetForm):
         if not User.objects.filter(email=email).exists():
             raise forms.ValidationError('No existe una cuenta con este correo electrónico.')
         return email
+
+
+class ConsultaForm(forms.ModelForm):
+    fecha = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Fecha')
+    hora = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}), label='Hora')
+
+    class Meta:
+        model = Consulta
+        fields = ['profesional', 'fecha', 'hora', 'precio']
+
+
+class ReservaConsultaForm(forms.ModelForm):  # Corregir aquí
+    class Meta:
+        model = Consulta
+        fields = ['profesional', 'fecha', 'hora', 'precio']
+        widgets = {
+            'profesional': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'fecha': forms.DateInput(attrs={'type': 'date', 'readonly': 'readonly'}),
+            'hora': forms.TimeInput(attrs={'type': 'time', 'readonly': 'readonly'}),
+            'precio': forms.NumberInput(attrs={'readonly': 'readonly'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['precio'].widget.attrs['step'] = 1
+
+
+class PagoForm(forms.Form):
+    token = forms.CharField(widget=forms.HiddenInput())
+    payment_method_id = forms.CharField(widget=forms.HiddenInput())
+    email = forms.EmailField()

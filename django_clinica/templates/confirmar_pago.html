@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-3">
+    <div class="header p-3 pb-md-4 mx-auto text-center">
+        <h1 class="display-4 fw-normal text-body-emphasis">Confirmar Pago</h1>
+        <p class="fs-5 text-body-secondary">
+            "Completa la información para proceder con el pago."
+        </p>
+    </div>
+
+    <main>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mb-4 rounded-3 shadow-sm border-light">
+                    <div class="card-header py-3 text-bg-light border-light">
+                        <h4 class="my-0 fw-normal">Detalles del Pago</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="paymentForm" method="post" action="https://www.mercadopago.com/mla/checkout/start">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="id_email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cardNumber" class="form-label">Número de Tarjeta</label>
+                                <input type="text" class="form-control" id="cardNumber" data-checkout="cardNumber" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cardExpirationMonth" class="form-label">Mes de Expiración</label>
+                                <input type="text" class="form-control" id="cardExpirationMonth" data-checkout="cardExpirationMonth" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cardExpirationYear" class="form-label">Año de Expiración</label>
+                                <input type="text" class="form-control" id="cardExpirationYear" data-checkout="cardExpirationYear" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="securityCode" class="form-label">Código de Seguridad</label>
+                                <input type="text" class="form-control" id="securityCode" data-checkout="securityCode" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cardholderName" class="form-label">Nombre del Titular</label>
+                                <input type="text" class="form-control" id="cardholderName" data-checkout="cardholderName" required>
+                            </div>
+                            <input type="hidden" name="token" id="token">
+                            <input type="hidden" name="payment_method_id" id="payment_method_id">
+                            <input type="hidden" name="transaction_amount" value="{{ consulta.precio }}">
+                            <input type="hidden" name="description" value="Consulta Dental">
+                            <button type="submit" class="btn btn-primary">Pagar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://secure.mlstatic.com/sdk/javascript/v1/mercadopago.js"></script>
+<script>
+    window.Mercadopago.setPublishableKey('{{ MERCADOPAGO_PUBLIC_KEY }}');
+
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        window.Mercadopago.createToken(this, function(status, response) {
+            if (status != 200 && status != 201) {
+                alert("Verifique los datos ingresados.");
+            } else {
+                var form = document.getElementById('paymentForm');
+                var token = document.createElement('input');
+                token.setAttribute('name', 'token');
+                token.setAttribute('type', 'hidden');
+                token.setAttribute('value', response.id);
+                form.appendChild(token);
+
+                var paymentMethodId = document.createElement('input');
+                paymentMethodId.setAttribute('name', 'payment_method_id');
+                paymentMethodId.setAttribute('type', 'hidden');
+                paymentMethodId.setAttribute('value', response.card.payment_method.id);
+                form.appendChild(paymentMethodId);
+
+                form.submit();
+            }
+        });
+    });
+</script>
+{% endblock %} 

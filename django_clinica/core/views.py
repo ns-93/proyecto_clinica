@@ -14,13 +14,14 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView, ListView, DetailView
 
-from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm, UserCreationForm, ReservaForm
-from .models import Servicios, RegistroServicio, Infocliente, Asistencia, Mouth, Reserva
+from .forms import RegisterForm, UserForm, ProfileForm, ServiciosForm, UserCreationForm, ReservaForm, ConsultaForm, PagoForm, ReservaConsultaForm
+from .models import Servicios, RegistroServicio, Infocliente, Asistencia, Mouth, Reserva, Consulta
 from accounts.models import Profile
 from . import forms
 from .models import Question, Answer
 from .models import About
 from .forms import AboutForm
+import mercadopago
 # Create your views here.
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
@@ -1392,3 +1393,104 @@ class AddAboutView(UserPassesTestMixin, CreateView):
     def form_invalid(self, form):
         messages.error(self.request, 'Ha ocurrido un error al agregar la información de "Acerca de".')
         return self.render_to_response(self.get_context_data(form=form))
+
+@add_group_name_to_context
+class ConsultasView(TemplateView):
+    template_name = 'consultas.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profesionales = User.objects.filter(groups__name='profesionales')
+        for profesional in profesionales:
+            profesional.consultas_disponibles = Consulta.objects.filter(profesional=profesional, pagada=False)
+        context['profesionales'] = profesionales
+        return context
+
+@add_group_name_to_context
+class CrearConsultaView(CreateView):
+    model = Consulta
+    form_class = ConsultaForm
+    template_name = 'crear_consulta.html'
+    success_url = reverse_lazy('consultas')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profesionales'] = User.objects.filter(groups__name='profesionales')
+        return context
+
+    def form_valid(self, form):
+        consulta = form.save(commit=False)
+        consulta.save()
+        messages.success(self.request, 'Consulta creada correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Hubo un error al crear la consulta.')
+        return self.render_to_response(self.get_context_data(form=form))
+
+@add_group_name_to_context
+class ReservarConsultaView(UpdateView):
+    model = Consulta
+    form_class = ReservaConsultaForm
+    template_name = 'reservar_consulta.html'
+    success_url = reverse_lazy('confirmar_pago')
+
+    def form_valid(self, form):
+        consulta = form.save(commit=False)
+        consulta.nombre_completo = self.request.POST.get('nombre_completo')
+        consulta.rut = self.request.POST.get('rut')
+        consulta.telefono = self.request.POST.get('telefono')
+        consulta.email = self.request.POST.get('email')
+        consulta.pagada = False
+        consulta.save()
+        return redirect('confirmar_pago', consulta_id=consulta.id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['consulta'] = self.get_object()
+        return context
+
+@add_group_name_to_context
+class ConfirmarPagoView(View):
+    def get(self, request, consulta_id):
+        consulta = get_object_or_404(Consulta, id=consulta_id)
+        form = PagoForm()
+        return render(request, 'confirmar_pago.html', {'consulta': consulta, 'form': form})
+
+    def post(self, request, consulta_id):
+        consulta = get_object_or_404(Consulta, id=consulta_id)
+        form = PagoForm(request.POST)
+        if form.is_valid():
+            sdk = mercadopago.SDK(os.getenv('MERCADOPAGO_ACCESS_TOKEN'))
+            payment_data = {
+                "transaction_amount": float(consulta.precio),
+                "token": form.cleaned_data['token'],
+                "description": "Consulta Dental",
+                "installments": 1,
+                "payment_method_id": form.cleaned_data['payment_method_id'],
+                "payer": {
+                    "email": form.cleaned_data['email']
+                }
+            }
+            payment = sdk.payment().create(payment_data)
+            if payment['response']['status'] == 'approved':
+                consulta.pagada = True
+                consulta.save()
+                return redirect('verificar_consulta')
+            else:
+                messages.error(request, 'Hubo un error en el pago.')
+        return render(request, 'confirmar_pago.html', {'consulta': consulta, 'form': form})
+
+@add_group_name_to_context
+class VerificarConsultaView(View):
+    def get(self, request):
+        return render(request, 'verificar_consulta.html')
+
+    def post(self, request):
+        rut = request.POST.get('rut')
+        consulta = Consulta.objects.filter(rut=rut, pagada=True).first()
+        if consulta:
+            return render(request, 'consulta_detalle.html', {'consulta': consulta})
+        else:
+            messages.error(request, 'No se encontró una consulta pagada con ese RUT o no tiene consulta en curso actualmente.')
+            return render(request, 'verificar_consulta.html')

@@ -1,0 +1,94 @@
+asgiref==3.8.1:
+
+Descripción: Biblioteca de referencia para ASGI (Asynchronous Server Gateway Interface), que es el estándar para aplicaciones web asíncronas en Python.
+Uso: Utilizada principalmente por Django para manejar solicitudes asíncronas.
+
+certifi==2024.8.30:
+
+Descripción: Proporciona un conjunto de certificados raíz de CA (Autoridad de Certificación) para validar certificados SSL.
+Uso: Asegura que las conexiones HTTPS sean seguras.
+
+charset-normalizer==3.4.0:
+
+Descripción: Biblioteca para detectar y normalizar la codificación de caracteres en textos.
+Uso: Utilizada por requests y otras bibliotecas para manejar correctamente diferentes codificaciones de texto.
+
+crispy-bootstrap5==2024.10:
+
+Descripción: Extensión de Django Crispy Forms para Bootstrap 5.
+Uso: Facilita la creación de formularios con Bootstrap 5 en Django.
+
+Django==5.1.2:
+
+Descripción: Framework web de alto nivel para el desarrollo rápido de aplicaciones web seguras y mantenibles.
+Uso: Proporciona herramientas y funcionalidades para desarrollar aplicaciones web completas.
+
+django-crispy-forms==2.3:
+
+Descripción: Aplicación de Django para crear formularios elegantes y personalizables.
+Uso: Facilita la creación y el manejo de formularios en Django.
+
+idna==3.10:
+
+Descripción: Implementación de IDNA (Internationalized Domain Names in Applications) en Python.
+Uso: Utilizada por requests y otras bibliotecas para manejar nombres de dominio internacionalizados.
+
+mercadopago==2.2.0:
+
+Descripción: Biblioteca oficial de MercadoPago para integrar pagos en tu aplicación.
+Uso: Permite realizar y gestionar pagos, suscripciones y otros servicios financieros proporcionados por MercadoPago.
+
+mysql-connector-python==8.3.0:
+
+Descripción: Conector oficial de MySQL para Python.
+Uso: Proporciona una interfaz para interactuar con bases de datos MySQL, permitiendo ejecutar consultas SQL, recuperar datos y gestionar transacciones.
+
+mysqlclient==2.2.6:
+
+Descripción: Biblioteca que proporciona una interfaz para interactuar con bases de datos MySQL desde Python.
+Uso: Utilizada por Django y otras aplicaciones para conectarse a bases de datos MySQL.
+
+pillow==11.0.0:
+
+Descripción: Biblioteca de procesamiento de imágenes para Python.
+Uso: Permite abrir, manipular y guardar muchos formatos de archivo de imagen diferentes.
+
+pip==24.3.1:
+
+Descripción: Gestor de paquetes para Python.
+Uso: Utilizado para instalar y gestionar paquetes de Python.
+
+python-dotenv==1.0.0:
+
+Descripción: Biblioteca que carga variables de entorno desde un archivo .env en tu entorno de ejecución.
+Uso: Facilita la gestión de configuraciones sensibles y variables de entorno, como claves API y configuraciones de base de datos.
+
+pytz==2020.1:
+
+Descripción: Biblioteca de zonas horarias para Python.
+Uso: Permite trabajar con zonas horarias y convertir entre diferentes zonas horarias.
+
+requests==2.32.3:
+
+Descripción: Biblioteca HTTP para Python.
+Uso: Facilita el envío de solicitudes HTTP y la interacción con servicios web.
+
+setuptools==65.5.0:
+
+Descripción: Biblioteca para la distribución de paquetes de Python.
+Uso: Utilizada para construir, empaquetar y distribuir paquetes de Python.
+
+sqlparse==0.5.1:
+
+Descripción: Biblioteca para el análisis y formateo de SQL.
+Uso: Utilizada por Django y otras aplicaciones para manejar y formatear consultas SQL.
+
+tzdata==2024.2:
+
+Descripción: Base de datos de zonas horarias.
+Uso: Proporciona información de zonas horarias actualizada para aplicaciones que necesitan manejar zonas horarias.
+
+urllib3==2.2.3:
+
+Descripción: Biblioteca HTTP con características adicionales como la conexión persistente y el agrupamiento de conexiones.
+Uso: Utilizada por requests y otras bibliotecas para manejar conexiones HTTP de manera eficiente.

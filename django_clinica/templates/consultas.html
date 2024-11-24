@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="d-flex justify-content-start mb-3">
+        <a href="{% url 'verificar_consulta' %}" class="btn btn-secondary">Consultar Consulta</a>
+    </div>
+    <div class="header p-3 pb-md-4 mx-auto text-center">
+        <h1 class="display-4 fw-normal text-body-emphasis">Consultas Disponibles</h1>
+        <p class="fs-5 text-body-secondary">
+            "Reserva tu consulta con nuestros profesionales. Elige la fecha y hora que más te convenga."
+        </p>
+    </div>
+
+    <main>
+        <div class="row row-cols-1 mb-3 text-center">
+            {% for profesional in profesionales %}
+                <div class="col">
+                    <div class="card mb-4 rounded-3 shadow-sm border-light">
+                        <div class="card-header py-3 text-bg-light border-light">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ profesional.profile.image.url }}" alt="Foto del Profesional" class="img-thumbnail rounded-circle me-3" style="width: 60px; height: 60px;">
+                                <h4 class="my-0 fw-normal">{{ profesional.get_full_name }}</h4>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if profesional.consultas_disponibles %}
+                                <div class="d-flex flex-wrap justify-content-center">
+                                    {% for consulta in profesional.consultas_disponibles %}
+                                        <div class="card m-2" style="width: 18rem;">
+                                            <div class="card-body">
+                                                <p class="card-text"><strong>Fecha:</strong> {{ consulta.fecha }}</p>
+                                                <p class="card-text"><strong>Hora:</strong> {{ consulta.hora }}</p>
+                                                <a href="{% url 'reservar_consulta' consulta.id %}" class="btn btn-outline-primary">Reservar</a>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p>Lo sentimos, de momento no hay horas disponibles.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+{% endblock %}

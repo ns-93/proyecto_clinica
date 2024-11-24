@@ -211,6 +211,11 @@ class Mouth(models.Model):
 
 #hasa aqui llega el modelo de odontograma
 
+class HorarioDisponible(models.Model):
+    dia = models.DateField()
+    hora = models.TimeField()
+    disponible = models.BooleanField(default=True)
+
 class Reserva(models.Model):
     profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional', related_name='reservas_profesional')
     cliente = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'clientes'}, verbose_name='Cliente', null=True, blank=True, related_name='reservas_cliente')
@@ -254,3 +259,14 @@ class About(models.Model):
     class Meta:
         verbose_name = 'Acerca de'
         verbose_name_plural = 'Acerca de'
+
+class Consulta(models.Model):
+    nombre_completo = models.CharField(max_length=255)
+    rut = models.CharField(max_length=12)
+    telefono = models.CharField(max_length=20)
+    email = models.EmailField()
+    fecha = models.DateField(default=now)  # Agregar valor predeterminado
+    hora = models.TimeField(default=now)  # Agregar valor predeterminado
+    profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional')
+    pagada = models.BooleanField(default=False)
+    precio = models.DecimalField(max_digits=10, decimal_places=2, default=50000)
