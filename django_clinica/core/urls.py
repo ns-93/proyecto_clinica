@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView, FaqView, PostQuestionView, PostAnswerView, AboutView, EditAboutView, AddAboutView, ConsultasView, CrearConsultaView, ConfirmarPagoView, VerificarConsultaView, ReservarConsultaView, webhook, CheckoutView, EditarConsultaView, EliminarConsultaView
+from .views import Crear_preferencia, CheckoutView
 from django.contrib.auth.decorators import login_required
 from .forms import CustomPasswordResetForm  # Importar CustomPasswordResetForm
 
@@ -89,10 +90,16 @@ urlpatterns = [
     # Rutas para consultas
     path('consultas/', ConsultasView.as_view(), name='consultas'),
     path('consultas/crear/', CrearConsultaView.as_view(), name='crear_consulta'),
+    #path('consultas/confirmar_pago/<int:consulta_id>/', ConfirmarPagoView.as_view(), name='confirmar_pago'),
+
     path('consultas/confirmar_pago/<int:consulta_id>/', ConfirmarPagoView.as_view(), name='confirmar_pago'),
-    path('consultas/confirmar_pago/<int:consulta_id>/', ConfirmarPagoView.as_view(), name='confirmar_pago'),
+
     path('consultas/verificar/', VerificarConsultaView.as_view(), name='verificar_consulta'),
+
+
     path('consultas/reservar/<int:pk>/', ReservarConsultaView.as_view(), name='reservar_consulta'),
+
+    
     path('consultas/editar/<int:pk>/', login_required(EditarConsultaView.as_view()), name='editar_consulta'),
     path('consultas/eliminar/<int:pk>/', login_required(EliminarConsultaView.as_view()), name='eliminar_consulta'),
 
@@ -101,6 +108,9 @@ urlpatterns = [
 
     # Ruta para el Checkout Pro
     path('checkout/<str:preference_id>/', CheckoutView.as_view(), name='checkout'),
+
+
+    path('crear-preferencia/<int:consulta_id>/', Crear_preferencia.as_view(), name='crear_preferencia'),
 ]
 
 

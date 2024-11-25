@@ -260,6 +260,8 @@ class About(models.Model):
         verbose_name = 'Acerca de'
         verbose_name_plural = 'Acerca de'
 
+
+#modelo consultas
 class Consulta(models.Model):
     nombre_completo = models.CharField(max_length=255)
     rut = models.CharField(max_length=12)

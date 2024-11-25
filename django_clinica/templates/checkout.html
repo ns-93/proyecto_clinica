@@ -1,41 +1,80 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="container mt-4">
+<main>
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Confirmar Compra</h3>
+        <div class="col-md-6">
+            <div class="card mb-4 rounded-3 shadow-sm border-light">
+                <div class="card-header py-3 text-bg-light border-light">
+                    <h4 class="my-0 fw-normal">Checkout</h4>
                 </div>
                 <div class="card-body">
-                    <h5>{{ consulta.nombre_completo }}</h5>
-                    <p>RUT: {{ consulta.rut }}</p>
-                    <p>Teléfono: {{ consulta.telefono }}</p>
-                    <p>Email: {{ consulta.email }}</p>
-                    <p class="font-weight-bold">Precio: $ {{ consulta.precio }} CLP</p>
-                    
-                    <!-- Contenedor para el botón de pago -->
-                    <div id="wallet_container"></div>
+                    {% if not preference_id or preference_id == 'None' %}
+                        <div class="alert alert-danger">
+                            Error: No se ha creado una preferencia de pago válida.
+                            <a href="{% url 'consultas' %}" class="btn btn-primary mt-2">Volver a Consultas</a>
+                        </div>
+                    {% else %}
+                        <!-- Resumen de la consulta -->
+                        <div class="mb-4">
+                            <h5>Resumen de la Consulta</h5>
+                            <p><strong>Monto:</strong> ${{ consulta.precio|floatformat:0 }}</p>
+                            <p><strong>Profesional:</strong> {{ consulta.profesional.get_full_name }}</p>
+                            <p><strong>Fecha:</strong> {{ consulta.fecha|date:'d-m-Y' }}</p>
+                        </div>
+
+                        <!-- Contenedor para el botón de pago -->
+                        <div id="wallet_container"></div>
+                        
+                        <!-- Indicador de carga -->
+                        <div id="loading" class="text-center d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-</div>
+</main>
 
-<!-- SDK MercadoPago.js V2 -->
+<!-- SDK MercadoPago.js -->
 <script src="https://sdk.mercadopago.com/js/v2"></script>
-
 <script>
-    // Configura tu Public Key
-    const mp = new MercadoPago('{{ MERCADOPAGO_PUBLIC_KEY }}', {
-        locale: 'es-CL'
-    });
-    
-    // Inicializa el checkout
-    mp.bricks().create("wallet", "wallet_container", {
-        initialization: {
-            preferenceId: "{{ preference_id }}"
+    document.addEventListener('DOMContentLoaded', function() {
+        const publicKey = '{{ public_key|escapejs }}';
+        const preferenceId = '{{ preference_id|escapejs }}';
+        const loading = document.getElementById('loading');
+
+        if (publicKey && preferenceId && preferenceId !== 'None') {
+            loading.classList.remove('d-none');
+            
+            const mp = new MercadoPago(publicKey);
+            
+            mp.bricks().create("wallet", {
+                initialization: {
+                    preferenceId: preferenceId
+                },
+                callbacks: {
+                    onReady: () => {
+                        console.log('Brick listo');
+                        loading.classList.add('d-none');
+                    },
+                    onSubmit: () => {
+                        loading.classList.remove('d-none');
+                        console.log('Pago iniciado');
+                    },
+                    onError: (error) => {
+                        loading.classList.add('d-none');
+                        console.error('Error:', error);
+                        alert('Error al procesar el pago. Por favor, intente nuevamente.');
+                    }
+                }
+            });
+        } else {
+            console.error('Credenciales inválidas');
+            document.getElementById('wallet_container').innerHTML = 
+                '<div class="alert alert-danger">Error al cargar el método de pago</div>';
         }
     });
 </script>

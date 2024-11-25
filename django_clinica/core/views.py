@@ -1,5 +1,5 @@
 import os
-
+from mercadopago import SDK
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, update_session_auth_hash
@@ -26,7 +26,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from dotenv import load_dotenv
 import json
-from django.views.decorators.csrf import csrf_exempt
+
+
+load_dotenv()
 # Create your views here.
 
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
@@ -1299,18 +1301,6 @@ class ReservarConsultaView(UpdateView):
         context['consulta'] = self.get_object()
         return context
 
-@add_group_name_to_context
-class CheckoutView(TemplateView):
-    template_name = 'checkout.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        preference_id = self.kwargs['preference_id']
-        consulta = get_object_or_404(Consulta, preference_id=preference_id)
-        context['consulta'] = consulta
-        context['preference_id'] = preference_id
-        context['MERCADOPAGO_PUBLIC_KEY'] = os.getenv('MERCADOPAGO_PUBLIC_KEY')
-        return context
 
 @add_group_name_to_context
 class ReservarHoraView(LoginRequiredMixin, View):
@@ -1481,6 +1471,8 @@ class AddAboutView(UserPassesTestMixin, CreateView):
         messages.error(self.request, 'Ha ocurrido un error al agregar la información de "Acerca de".')
         return self.render_to_response(self.get_context_data(form=form))
 
+#consutal y metodo de pago
+
 @add_group_name_to_context
 class ConsultasView(TemplateView):
     template_name = 'consultas.html'
@@ -1492,7 +1484,7 @@ class ConsultasView(TemplateView):
             profesional.consultas_disponibles = Consulta.objects.filter(profesional=profesional, pagada=False)
         context['profesionales'] = profesionales
         return context
-
+"""
 @add_group_name_to_context
 class CrearConsultaView(CreateView):
     model = Consulta
@@ -1514,6 +1506,58 @@ class CrearConsultaView(CreateView):
     def form_invalid(self, form):
         messages.error(self.request, 'Hubo un error al crear la consulta.')
         return self.render_to_response(self.get_context_data(form=form))
+"""
+
+@add_group_name_to_context
+class VerificarConsultaView(View):
+    def get(self, request):
+        return render(request, 'verificar_consulta.html')
+
+    def post(self, request):
+        rut = request.POST.get('rut')
+        consulta = Consulta.objects.filter(rut=rut, pagada=True).first()
+        if consulta:
+            return render(request, 'consulta_detalle.html', {'consulta': consulta})
+        else:
+            messages.error(request, 'No se encontró una consulta pagada con ese RUT o no tiene consulta en curso actualmente.')
+            return render(request, 'verificar_consulta.html')
+
+@add_group_name_to_context
+class EditarConsultaView(UserPassesTestMixin, UpdateView):
+    model = Consulta
+    form_class = ConsultaForm
+    template_name = 'editar_consulta.html'
+    success_url = reverse_lazy('consultas')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='ejecutivos').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'La consulta se ha actualizado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al actualizar la consulta.')
+        return self.render_to_response(self.get_context_data(form=form))
+
+@add_group_name_to_context
+class EliminarConsultaView(UserPassesTestMixin, DeleteView):
+    model = Consulta
+    template_name = 'eliminar_consulta.html'
+    success_url = reverse_lazy('consultas')
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='ejecutivos').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'La consulta se ha eliminado correctamente.')
+        return super().delete(request, *args, **kwargs)
 
 @add_group_name_to_context
 class ConfirmarPagoView(View):
@@ -1568,53 +1612,104 @@ def webhook(request):
             print(f"Error: {str(e)}")
     return HttpResponse(status=200)
 
-@add_group_name_to_context
-class VerificarConsultaView(View):
-    def get(self, request):
-        return render(request, 'verificar_consulta.html')
+"""
+codigo nuevo
+"""
+MERCADOPAGO_ACCESS_TOKEN = os.getenv('MERCADOPAGO_ACCESS_TOKEN')
+MERCADOPAGO_PUBLIC_KEY = os.getenv('MERCADOPAGO_PUBLIC_KEY')
 
-    def post(self, request):
-        rut = request.POST.get('rut')
-        consulta = Consulta.objects.filter(rut=rut, pagada=True).first()
-        if consulta:
-            return render(request, 'consulta_detalle.html', {'consulta': consulta})
-        else:
-            messages.error(request, 'No se encontró una consulta pagada con ese RUT o no tiene consulta en curso actualmente.')
-            return render(request, 'verificar_consulta.html')
+
+# 1. Verificar variables de entorno
+def verify_mercadopago_credentials():
+    access_token = os.getenv('MERCADOPAGO_ACCESS_TOKEN')
+    public_key = os.getenv('MERCADOPAGO_PUBLIC_KEY')
+    
+    if not access_token or not public_key:
+        raise ValueError("Credenciales de MercadoPago no configuradas")
+    return access_token, public_key
 
 @add_group_name_to_context
-class EditarConsultaView(UserPassesTestMixin, UpdateView):
+class CrearConsultaView(CreateView):
     model = Consulta
     form_class = ConsultaForm
-    template_name = 'editar_consulta.html'
+    template_name = 'crear_consulta.html'
     success_url = reverse_lazy('consultas')
 
-    def test_func(self):
-        return self.request.user.groups.filter(name='ejecutivos').exists()
-
-    def handle_no_permission(self):
-        return redirect('error')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profesionales'] = User.objects.filter(groups__name='profesionales')
+        return context
 
     def form_valid(self, form):
-        messages.success(self.request, 'La consulta se ha actualizado correctamente.')
-        return super().form_valid(form)
+        consulta = form.save(commit=False)
+        consulta.save()
+        messages.success(self.request, 'Consulta creada correctamente.')
+        return redirect('reservar_consulta', pk=consulta.pk)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Ha ocurrido un error al actualizar la consulta.')
+        messages.error(self.request, 'Hubo un error al crear la consulta.')
         return self.render_to_response(self.get_context_data(form=form))
 
-@add_group_name_to_context
-class EliminarConsultaView(UserPassesTestMixin, DeleteView):
-    model = Consulta
-    template_name = 'eliminar_consulta.html'
-    success_url = reverse_lazy('consultas')
+class Crear_preferencia(View):
+    def post(self, request, consulta_id):
+        try:
+            consulta = get_object_or_404(Consulta, id=consulta_id)
+            sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+            
+            preference_data = {
+                "items": [{
+                    "id": str(consulta.id),
+                    "title": f"Consulta con Dr. {consulta.profesional}",
+                    "currency_id": "CLP",
+                    "quantity": 1,
+                    "unit_price": float(consulta.precio),
+                    "description": f"Consulta médica el {consulta.fecha}"
+                }],
+                "payer": {
+                    "name": request.POST.get('nombre_completo').split()[0],
+                    "surname": ' '.join(request.POST.get('nombre_completo').split()[1:]),
+                    "email": request.POST.get('email'),
+                    "phone": {
+                        "area_code": "56",
+                        "number": request.POST.get('telefono')
+                    },
+                    "identification": {
+                        "type": "RUT",
+                        "number": request.POST.get('rut')
+                    }
+                },
+                "back_urls": {
+                    "success": "https://tu-sitio.com/pago-exitoso",
+                    "failure": "https://tu-sitio.com/pago-fallido",
+                    "pending": "https://tu-sitio.com/pago-pendiente"
+                },
+                "auto_return": "approved"
+            }
+            
+            preference_response = sdk.preference().create(preference_data)
+            preference = preference_response["response"]
+            
+            # Redirigir a la URL de pago de MercadoPago
+            return redirect(preference["init_point"])
+        
+        except Exception as e:
+            messages.error(request, f'Error al crear la preferencia de pago: {e}')
+            return redirect('url_de_error')  # Reemplaza 'url_de_error' con la URL de tu página de error
+class CheckoutView(View):
+    def get(self, request, preference_id):
+        try:
+            if not preference_id:
+                raise ValueError('Preferencia de pago no válida')
+                
+            context = {
+                'preference_id': preference_id,
+                'public_key': settings.MERCADOPAGO_PUBLIC_KEY
+            }
+            
+            return render(request, 'checkout.html', context)
+            
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect('consultas')
+        
 
-    def test_func(self):
-        return self.request.user.groups.filter(name='ejecutivos').exists()
-
-    def handle_no_permission(self):
-        return redirect('error')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(self.request, 'La consulta se ha eliminado correctamente.')
-        return super().delete(request, *args, **kwargs)
