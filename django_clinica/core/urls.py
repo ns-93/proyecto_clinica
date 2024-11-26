@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView, FaqView, PostQuestionView, PostAnswerView, AboutView, EditAboutView, AddAboutView, ConsultasView, CrearConsultaView, ConfirmarPagoView, VerificarConsultaView, ReservarConsultaView, webhook, CheckoutView, EditarConsultaView, EliminarConsultaView, payment_success, payment_failure, payment_pending, ConsultasPagadasView, ConsultasPendientesView
-from .views import Crear_preferencia, CheckoutView
+from .views import Crear_preferencia, CheckoutView,ServiciosDashboardView, VentasDashboardView
 from django.contrib.auth.decorators import login_required
 from .forms import CustomPasswordResetForm  # Importar CustomPasswordResetForm
 
@@ -126,8 +126,11 @@ urlpatterns = [
     path('payment/pending/<int:consulta_id>/', payment_pending, name='payment_pending'),
     path('webhook/', webhook, name='webhook'),
     
+    #dashboard
+    # urls.py
+    path('servicios/dashboard/', ServiciosDashboardView.as_view(), name='servicios_dashboard'),
     
-    
+    path('ventas/dashboard/', VentasDashboardView.as_view(), name='ventas_dashboard'),
 ]
 
 

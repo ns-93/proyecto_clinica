@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Agregar Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mt-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-line"></i> Dashboard de Servicios</h2>
+        <a href="{% url 'servicios' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <!-- Gráficos Generales -->
+    <div class="row mb-4">
+        <!-- Gráfico de Dona para Estado General -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Estado General de Servicios</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="estadosGeneralChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Gráfico de Barras para Asistencias Generales -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Asistencias Totales</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="asistenciasGeneralChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Servicios -->
+    {% for item in servicios_con_asistencias %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ item.servicio.name }}</h4>
+                <span class="badge {% if item.servicio.status == 'C' %}bg-success
+                                  {% elif item.servicio.status == 'A' %}bg-primary
+                                  {% elif item.servicio.status == 'R' %}bg-danger
+                                  {% else %}bg-warning{% endif %}">
+                    {{ item.servicio.get_status_display }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- Estadísticas del Servicio -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="border rounded p-3 text-center">
+                        <h5>Profesional</h5>
+                        <p class="mb-0">{{ item.servicio.profesional.get_full_name }}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 text-center">
+                        <h5>Total Asistencias</h5>
+                        <p class="mb-0">{{ item.total_asistencias }}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 text-center">
+                        <h5>Confirmadas</h5>
+                        <p class="mb-0">{{ item.asistencias_confirmadas }}</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 text-center">
+                        <h5>Porcentaje</h5>
+                        <p class="mb-0">{{ item.porcentaje|floatformat:1 }}%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos del Servicio -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <canvas id="asistenciasChart{{ forloop.counter }}"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="tendenciaChart{{ forloop.counter }}"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabla de Asistencias -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asistencia in item.asistencias %}
+                        <tr>
+                            <td>{{ asistencia.date|date:"d/m/Y" }}</td>
+                            <td>{{ asistencia.cliente.get_full_name }}</td>
+                            <td>
+                                {% if asistencia.present %}
+                                    <span class="badge bg-success">Asistió</span>
+                                {% else %}
+                                    <span class="badge bg-danger">No Asistió</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No hay registros de asistencias</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-responsive mt-4">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asistencia in item.asistencias %}
+                        <tr>
+                            <td>{{ asistencia.date|date:"d/m/Y" }}</td>
+                            <td>{{ asistencia.cliente.get_full_name }}</td>
+                            <td>
+                                {% if asistencia.present %}
+                                    <span class="badge bg-success">Asistió</span>
+                                {% else %}
+                                    <span class="badge bg-danger">No Asistió</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No hay registros de asistencias</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Scripts para los gráficos -->
+<script>
+    // Gráfico General de Estados
+    new Chart(document.getElementById('estadosGeneralChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Completados', 'Pendientes', 'En Proceso'],
+            datasets: [{
+                data: [
+                    {% for item in servicios_con_asistencias %}
+                        {{ item.asistencias_confirmadas }},
+                        {{ item.faltas }},
+                        {{ item.total_asistencias }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(0, 123, 255, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Estado de Servicios'
+                }
+            }
+        }
+    });
+
+    // Gráfico General de Asistencias
+    new Chart(document.getElementById('asistenciasGeneralChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for item in servicios_con_asistencias %}
+                    '{{ item.servicio.name }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Asistencias Confirmadas',
+                data: [
+                    {% for item in servicios_con_asistencias %}
+                        {{ item.asistencias_confirmadas }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(40, 167, 69, 0.8)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gráficos por Servicio
+    {% for item in servicios_con_asistencias %}
+    new Chart(document.getElementById('asistenciasChart{{ forloop.counter }}').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: ['Asistencias', 'Faltas'],
+            datasets: [{
+                data: [
+                    {{ item.asistencias_confirmadas }},
+                    {{ item.faltas }}
+                ],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Distribución de Asistencias'
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('tendenciaChart{{ forloop.counter }}').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+            datasets: [{
+                label: 'Tendencia de Asistencias',
+                data: [
+                    {{ item.asistencias_confirmadas }},
+                    {{ item.total_asistencias }},
+                    {{ item.faltas }},
+                    {{ item.asistencias_confirmadas }}
+                ],
+                borderColor: 'rgba(0, 123, 255, 0.8)',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    {% endfor %}
+</script>
+{% endblock %}

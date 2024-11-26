@@ -1,6 +1,11 @@
 import os
 from mercadopago import SDK
 from django.conf import settings
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncDay, Cast
+from django.db.models.fields import DateField
+from django.db.models.functions import TruncDate, ExtractMonth
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login, update_session_auth_hash
@@ -29,6 +34,8 @@ from django.http import HttpResponse
 from dotenv import load_dotenv
 import json
 import logging
+
+
 
 load_dotenv()
 # Create your views here.
@@ -1956,4 +1963,110 @@ def reservar_consulta(request, pk):
     })
     
     
+
+
+
+
+
+#dashboard 
+"""@add_group_name_to_context
+class ServiciosDashboardView(ListView):
+    model = Servicios
+    template_name = 'servicios_dashboard.html'
+    context_object_name = 'servicios'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        servicios_con_asistencias = []
+        for servicio in self.get_queryset():
+            asistencias = Asistencia.objects.filter(servicio=servicio)
+            total = asistencias.count()
+            confirmadas = asistencias.filter(present=True).count()
+            faltas = total - confirmadas  # Calculamos las faltas aquí
+            porcentaje = (confirmadas / total * 100) if total > 0 else 0
+            
+            servicios_con_asistencias.append({
+                'servicio': servicio,
+                'total_asistencias': total,
+                'asistencias_confirmadas': confirmadas,
+                'faltas': faltas,  # Agregamos las faltas al contexto
+                'porcentaje': porcentaje
+            })
+            
+        context['servicios_con_asistencias'] = servicios_con_asistencias
+        return context"""
     
+
+@add_group_name_to_context  
+class ServiciosDashboardView(ListView):
+    model = Servicios
+    template_name = 'servicios_dashboard.html'
+    context_object_name = 'servicios'
+
+    def get_queryset(self):
+        # Obtener todos los servicios o filtrar según necesidad
+        return Servicios.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        servicios_con_asistencias = []
+        
+        for servicio in self.get_queryset():
+            asistencias = Asistencia.objects.filter(servicio=servicio)
+            total = asistencias.count()
+            confirmadas = asistencias.filter(present=True).count()
+            faltas = total - confirmadas
+            
+            servicios_con_asistencias.append({
+                'servicio': servicio,
+                'total_asistencias': total,
+                'asistencias_confirmadas': confirmadas,
+                'faltas': faltas,
+                'porcentaje': (confirmadas / total * 100) if total > 0 else 0,
+                'asistencias': asistencias
+            })
+            
+        context['servicios_con_asistencias'] = servicios_con_asistencias
+        return context
+
+
+#dashboard de ventas
+@add_group_name_to_context
+class VentasDashboardView(TemplateView):
+    template_name = 'ventas_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        consultas = Consulta.objects.all()
+
+        # Usamos Cast para asegurar que fecha sea tratada como DateField
+        consultas_diarias = consultas.annotate(
+            fecha_consulta=Cast('fecha', DateField())
+        ).values('fecha_consulta').annotate(
+            total=Count('id')
+        ).order_by('fecha_consulta')
+
+        # Preparar datos para el gráfico
+        fechas = [consulta['fecha_consulta'].strftime('%Y-%m-%d') if consulta['fecha_consulta'] else ''
+            for consulta in consultas_diarias]
+        totales = [consulta['total'] for consulta in consultas_diarias]
+        
+        context.update({
+            'fechas': json.dumps(fechas),
+            'consultas_por_dia': json.dumps(totales),
+            'total_consultas': consultas.count(),
+            'ingresos_totales': consultas.filter(
+                estado_pago='completado'
+            ).aggregate(total=Sum('precio'))['total'] or 0,
+            'ingresos_pendientes': consultas.filter(
+                estado_pago='pendiente'
+            ).aggregate(total=Sum('precio'))['total'] or 0,
+            'estados_pago': {
+                'completado': consultas.filter(estado_pago='completado').count(),
+                'pendiente': consultas.filter(estado_pago='pendiente').count(),
+                'fallido': consultas.filter(estado_pago='fallido').count()
+            }
+        })
+        
+        return context

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'core',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django.contrib.humanize',
 ]
 
 # Configuración de crispy-forms para usar el framework de diseño bootstrap5.
