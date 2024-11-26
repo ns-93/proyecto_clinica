@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Pago Exitoso - Dental Knights{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-success shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i> ¡Pago Exitoso!
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h4 class="alert-heading">¡Gracias por tu reserva!</h4>
+                        <p>Tu consulta #{{ consulta.id }} ha sido confirmada y pagada correctamente.</p>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Detalles de la transacción</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>ID de Pago:</strong> {{ payment_id }}</li>
+                                <li><strong>Estado:</strong> <span class="badge bg-success">{{ status }}</span></li>
+                                <li><strong>Fecha de consulta:</strong> {{ consulta.fecha|date:"d/m/Y" }}</li>
+                                <li><strong>Hora:</strong> {{ consulta.hora|time:"H:i" }}</li>
+                                <li><strong>Profesional:</strong> Dr(a). {{ consulta.profesional.get_full_name }}</li>
+                                <li><strong>Paciente:</strong> {{ consulta.nombre_completo }}</li>
+                                <li><strong>Monto pagado:</strong> ${{ consulta.precio|floatformat:0 }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{% url 'ver_consulta' consulta.id %}" class="btn btn-success me-2">
+                            <i class="fas fa-eye me-1"></i> Ver detalles de la consulta
+                        </a>
+                        <a href="{% url 'consultas' %}" class="btn btn-primary">
+                            <i class="fas fa-calendar-alt me-1"></i> Volver a consultas
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-envelope me-1"></i> 
+                        Hemos enviado un correo con los detalles de tu consulta a {{ consulta.email }}.
+                        <br>
+                        <i class="fas fa-phone me-1"></i>
+                        Si tienes dudas, contáctanos al:
+                        <strong><a href="tel:+56912345678">+56 9 1234 5678</a></strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

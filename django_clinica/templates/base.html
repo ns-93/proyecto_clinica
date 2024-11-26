@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{% static 'css/odonto.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     
-    <title>Dental Knights - Protegemos tu sonrisa</title>  <!-- Título de la página que aparecerá en la pestaña del navegador -->
+    <title>{% block title %}Dental Knights{% endblock %}</title><!-- Título de la página que aparecerá en la pestaña del navegador -->
 </head>
 
 <body>

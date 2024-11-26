@@ -27,6 +27,16 @@
 
                     {{ form | crispy }}  <!-- Renderiza el formulario con el estilo de crispy_forms, que aplica estilos automáticamente -->
 
+                    <!-- Campo para seleccionar el cliente -->
+                    <div class="mb-3">
+                        <label for="cliente" class="form-label">Cliente</label>
+                        <select id="cliente" name="cliente" class="form-select">
+                            {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}">{{ cliente.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
                     <!-- Enlaces de navegación -->
                     <a class="card-link" href="{% url 'home' %}">Inicio</a>  <!-- Enlace a la página principal -->
                     <a class="card-link" href="{% url 'servicios' %}">Servicios</a>  <!-- Enlace a la página de servicios -->

@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+
+<div class="container-fluid py-4">
+    <!-- Encabezado del Dashboard -->
+    <div class="container-xxl mx-auto mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <h1 class="h2 mb-0">
+                    <i class="fas fa-chart-line me-2" aria-hidden="true"></i>
+                    <span>Dashboard de Ventas</span>
+                </h1>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Tarjetas de Estadísticas -->
+    <section class="container-xxl mx-auto mb-4">
+        <div class="row g-4">
+            <!-- Total Consultas -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-primary text-white h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h6">Total Consultas</h2>
+                        <p class="display-6 mb-0">{{ total_consultas }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingresos Completados -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-success text-white h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h6">Ingresos Completados</h2>
+                        <p class="display-6 mb-0">${{ ingresos_totales|floatformat:0|intcomma }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingresos Pendientes -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-warning h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h6">Ingresos Pendientes</h2>
+                        <p class="display-6 mb-0">${{ ingresos_pendientes|floatformat:0|intcomma }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Pagadas -->
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-info text-white h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h6">Consultas Pagadas</h2>
+                        <p class="display-6 mb-0">{{ total_pagadas }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gráficos -->
+    <section class="container-xxl mx-auto">
+        <div class="row g-4">
+            <!-- Gráfico de Consultas por Día -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title h5">Consultas por Día</h3>
+                        <!-- Contenedor con altura máxima -->
+                        <div style="height: 250px; max-height: 250px;">
+                            <canvas id="consultasDiarias"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico de Estados -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title h5">Estado de Consultas</h3>
+                        <!-- Contenedor con altura fija -->
+                        <div style="height: 300px;">
+                            <canvas id="estadosConsultas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Opciones comunes para los gráficos
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    };
+
+    // Configuración específica para el gráfico de línea
+    const lineOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                },
+                max: Math.max(...{{ consultas_por_dia|safe }}) + 1
+            }
+        }
+    };
+
+    // Gráfico de línea
+    const ctxLinea = document.getElementById('consultasDiarias').getContext('2d');
+    new Chart(ctxLinea, {
+        type: 'line',
+        data: {
+            labels: {{ fechas|safe }},
+            datasets: [{
+                label: 'Consultas',
+                data: {{ consultas_por_dia|safe }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: lineOptions
+    });
+
+    // Gráfico circular
+    const ctxPie = document.getElementById('estadosConsultas').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'pie',
+        data: {
+            labels: ['Completadas', 'Pendientes', 'Fallidas'],
+            datasets: [{
+                data: [
+                    {{ estados_pago.completado }},
+                    {{ estados_pago.pendiente }},
+                    {{ estados_pago.fallido }}
+                ],
+                backgroundColor: [
+                    'rgb(40, 167, 69)',
+                    'rgb(255, 193, 7)',
+                    'rgb(220, 53, 69)'
+                ]
+            }]
+        },
+        options: commonOptions
+    });
+});
+</script>
+{% endblock %}

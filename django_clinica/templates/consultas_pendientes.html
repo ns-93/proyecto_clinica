@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-clock text-warning"></i> Consultas Pendientes</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Profesional</th>
+                    <th>Paciente</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for consulta in consultas %}
+                <tr>
+                    <td>{{ consulta.fecha|date:"d/m/Y" }}</td>
+                    <td>{{ consulta.hora }}</td>
+                    <td>{{ consulta.profesional.get_full_name }}</td>
+                    <td>{{ consulta.nombre_completo }}</td>
+                    <td>${{ consulta.precio|floatformat:0 }}</td>
+                    <td>
+                        <span class="badge bg-warning">Pendiente</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'reservar_consulta' consulta.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-redo"></i> Reintentar Pago
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No hay consultas pendientes</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'consultas' %}" class="btn btn-secondary">Volver Atrás</a>
+    </div>
+</div>
+{% endblock %}

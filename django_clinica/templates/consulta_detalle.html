@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-3">
+    <h5>Detalles de la Consulta</h5>
+    <ul class="list-group">
+        <li class="list-group-item">Nombre Completo: {{ consulta.nombre_completo }}</li>
+        <li class="list-group-item">RUT: {{ consulta.rut }}</li>
+        <li class="list-group-item">Teléfono: {{ consulta.telefono }}</li>
+        <li class="list-group-item">Email: {{ consulta.email }}</li>
+        <li class="list-group-item">Profesional: {{ consulta.profesional.get_full_name }}</li>
+        <li class="list-group-item">Fecha: {{ consulta.fecha }}</li>
+        <li class="list-group-item">Hora: {{ consulta.hora }}</li>
+        <li class="list-group-item">Precio: ${{ consulta.precio }}</li>
+    </ul>
+</div>
+{% endblock %}

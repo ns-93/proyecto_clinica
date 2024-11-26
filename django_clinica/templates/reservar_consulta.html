@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<main>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mb-4 rounded-3 shadow-sm border-light">
+                <div class="card-header py-3 text-bg-light border-light">
+                    <h4 class="my-0 fw-normal">Reservar Consulta</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Cambiar a un solo formulario que cree la preferencia -->
+                    <form method="POST" action="{% url 'crear_preferencia' consulta.id %}">
+                        {% csrf_token %}
+                        <!-- Datos de la consulta (readonly) -->
+                        <div class="mb-3">
+                            <label for="id_profesional" class="form-label">Profesional</label>
+                            <input type="text" class="form-control" value="{{ consulta.profesional.get_full_name }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_fecha" class="form-label">Fecha</label>
+                            <input type="text" class="form-control" value="{{ consulta.fecha|date:'d-m-Y' }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_precio" class="form-label">Precio</label>
+                            <input type="text" class="form-control" value="{{ consulta.precio|floatformat:0 }}" readonly>
+                        </div>
+                        
+                        <!-- Datos del pagador -->
+                        <div class="mb-3">
+                            <label for="id_nombre_completo" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" name="nombre_completo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_rut" class="form-label">RUT</label>
+                            <input type="text" class="form-control" name="rut" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_telefono" class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" name="telefono" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                    
+                        <button type="submit" class="btn btn-primary">Proceder al Pago</button>
+                    </form>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

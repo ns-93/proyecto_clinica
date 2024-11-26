@@ -2,6 +2,10 @@
     <div class="mb-1">
         <a href="{% url 'reservas_profesionales' %}" class="btn btn-primary">Ver Reservas</a>
     </div>
+    <!-- Botón para que los profesionales agreguen un nuevo servicio -->
+    <div class="mb-1">
+        <a href="{% url 'servicios_create' %}" class="btn btn-success">Agregar Servicio</a>
+    </div>
     <!-- Aquí puedes agregar más contenido relacionado con los profesionales -->
 </div>
 <hr>
@@ -65,7 +69,7 @@
 <!-- Servicios finalizados -->
 <div class="card text-bg-danger shadow mb-3">
     <div class="card-header">SERVICIOS FINALIZADOS</div>
-    <div class="card-body">
+    <div class=" card-body">
         {% if finalized_services %}  <!-- Verifica si existen servicios finalizados -->
             <ul class="list-group">
                 {% for service in finalized_services %}
