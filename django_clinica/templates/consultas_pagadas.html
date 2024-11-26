@@ -1,0 +1,38 @@
+<!-- consultas_pagadas.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-check-circle"></i> Consultas Pagadas</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Profesional</th>
+                    <th>Paciente</th>
+                    <th>Monto</th>
+                    <th>Fecha Pago</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for consulta in consultas %}
+                <tr>
+                    <td>{{ consulta.fecha|date:"d/m/Y" }}</td>
+                    <td>{{ consulta.hora }}</td>
+                    <td>{{ consulta.profesional.get_full_name }}</td>
+                    <td>{{ consulta.nombre_completo }}</td>
+                    <td>${{ consulta.precio|floatformat:0 }}</td>
+                    <td>{{ consulta.fecha_compra|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay consultas pagadas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

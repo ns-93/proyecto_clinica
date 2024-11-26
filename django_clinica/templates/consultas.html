@@ -3,9 +3,22 @@
 {% block content %}
 <div class="container mt-3">
     <div class="d-flex justify-content-between mb-3">
-        <a href="{% url 'verificar_consulta' %}" class="btn btn-secondary">Consultar Consulta</a>
+        <a href="{% url 'verificar_consulta' %}" class="btn btn-secondary">
+            <i class="fas fa-search"></i> Consultar Consulta
+        </a>
+        
         {% if group_name == 'ejecutivos' %}
-            <a href="{% url 'crear_consulta' %}" class="btn btn-primary">Crear Consulta</a>
+        <div>
+            <a href="{% url 'consultas_pagadas' %}" class="btn btn-success">
+                <i class="fas fa-check-circle"></i> Consultas Pagadas
+            </a>
+            <a href="{% url 'consultas_pendientes' %}" class="btn btn-warning">
+                <i class="fas fa-clock"></i> Consultas Pendientes
+            </a>
+            <a href="{% url 'crear_consulta' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Crear Consulta
+            </a>
+        </div>
         {% endif %}
     </div>
     <div class="header p-3 pb-md-4 mx-auto text-center">
