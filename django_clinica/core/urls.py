@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView, FaqView, PostQuestionView, PostAnswerView, AboutView, EditAboutView, AddAboutView, ConsultasView, CrearConsultaView, ConfirmarPagoView, VerificarConsultaView, ReservarConsultaView, webhook, CheckoutView, EditarConsultaView, EliminarConsultaView
+from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView, FaqView, PostQuestionView, PostAnswerView, AboutView, EditAboutView, AddAboutView, ConsultasView, CrearConsultaView, ConfirmarPagoView, VerificarConsultaView, ReservarConsultaView, webhook, CheckoutView, EditarConsultaView, EliminarConsultaView, payment_success, payment_failure, payment_pending, ConsultasPagadasView, ConsultasPendientesView
 from .views import Crear_preferencia, CheckoutView
 from django.contrib.auth.decorators import login_required
 from .forms import CustomPasswordResetForm  # Importar CustomPasswordResetForm
@@ -63,7 +63,7 @@ urlpatterns = [
     path('view/<int:pk_mouth>/', login_required(view_odonto), name='odontogram_in_codes'),
     
     # Rutas para las vistas de reservas
-    path('reservas/', login_required(ReservaListView.as_view()), name='reservas'),
+    path('reservas/', login_required(ReservaListView.as_view()), name='reservas_disponibles'),
     path('reservas/nueva/', login_required(ReservaCreateView.as_view()), name='crear_reserva'),
     path('reservas/<int:pk>/editar/', login_required(ReservaUpdateView.as_view()), name='editar_reserva'),
     path('reservas/<int:pk>/eliminar/', login_required(ReservaDeleteView.as_view()), name='eliminar_reserva'),
@@ -102,6 +102,9 @@ urlpatterns = [
     
     path('consultas/editar/<int:pk>/', login_required(EditarConsultaView.as_view()), name='editar_consulta'),
     path('consultas/eliminar/<int:pk>/', login_required(EliminarConsultaView.as_view()), name='eliminar_consulta'),
+    
+    path('consultas/pagadas/', ConsultasPagadasView.as_view(), name='consultas_pagadas'),
+    path('consultas/pendientes/', ConsultasPendientesView.as_view(), name='consultas_pendientes'),
 
     # Ruta para el webhook de MercadoPago
     path('webhook/', webhook, name='webhook'),
@@ -111,6 +114,14 @@ urlpatterns = [
 
 
     path('crear-preferencia/<int:consulta_id>/', Crear_preferencia.as_view(), name='crear_preferencia'),
+    
+    path('payment/success/<int:consulta_id>/', payment_success, name='payment_success'),
+    path('payment/failure/<int:consulta_id>/', payment_failure, name='payment_failure'),
+    path('payment/pending/<int:consulta_id>/', payment_pending, name='payment_pending'),
+    path('webhook/', webhook, name='webhook'),
+    
+    
+    
 ]
 
 

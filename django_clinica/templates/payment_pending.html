@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Pago Pendiente - Dental Knights{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-warning shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">
+                        <i class="fas fa-clock me-2"></i> Pago Pendiente
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h4 class="alert-heading">¡Gracias por tu pago!</h4>
+                        <p>Tu pago para la consulta #{{ consulta.id }} está pendiente de confirmación.</p>
+                        <hr>
+                        <p class="mb-0">
+                            <i class="fas fa-info-circle me-1"></i> 
+                            Recibirás un correo electrónico cuando el pago sea confirmado.
+                        </p>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Detalles de la consulta</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Fecha:</strong> {{ consulta.fecha }}</li>
+                                <li><strong>Profesional:</strong> {{ consulta.profesional }}</li>
+                                <li><strong>Monto:</strong> ${{ consulta.precio }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{% url 'consultas' %}" class="btn btn-primary me-2">
+                            <i class="fas fa-calendar-alt me-1"></i> Ver mis consultas
+                        </a>
+                        <a href="{% url 'home' %}" class="btn btn-secondary">
+                            <i class="fas fa-home me-1"></i> Ir al inicio
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-question-circle me-1"></i> 
+                        Si tienes dudas, contáctanos al 
+                        <strong>+56 9 1234 5678</strong> o 
+                        <a href="mailto:soporte@dentalknights.com">soporte@dentalknights.com</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
