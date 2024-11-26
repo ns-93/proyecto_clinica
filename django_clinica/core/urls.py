@@ -5,6 +5,9 @@ from .views import Crear_preferencia, CheckoutView
 from django.contrib.auth.decorators import login_required
 from .forms import CustomPasswordResetForm  # Importar CustomPasswordResetForm
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 # Definición de las rutas o URLs para la aplicación
 urlpatterns = [
     # Página de inicio: Ruta principal de la web
@@ -51,10 +54,13 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='custom_login'),
     
     # Página de detalles de usuario: Muestra los detalles de un usuario específico
-    path('usuarios_detalles/<int:pk>/', login_required(UserDetailsView.as_view()), name='usuario_detalles'),
+    path('usuarios_detalles/<int:pk>/', 
+        login_required(UserDetailsView.as_view()), 
+        name='usuario_detalles'),
     
     # Página para editar el perfil de un usuario por un superusuario
-    path('superuser_edit/<int:user_id>/', login_required(superuser_edit), name='superuser_edit'),
+    path('superuser_edit/<int:user_id>/', superuser_edit, name='superuser_edit'),
+    
     
     # Página para solicitar odontograma
     path('new/', login_required(new_odontogram), name='new_odontogram'),
@@ -125,3 +131,5 @@ urlpatterns = [
 ]
 
 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

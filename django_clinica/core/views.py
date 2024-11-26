@@ -2,7 +2,7 @@ import os
 from mercadopago import SDK
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib.auth.models import Group, User
@@ -842,45 +842,36 @@ class UserDetailsView(LoginRequiredMixin, DetailView):
 
 #actualizacion de la informacion de un usuario
 # Vista para que un superusuario edite la información de un usuario
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def superuser_edit(request, user_id):
-    # Verificar si el usuario actual es un superusuario
-    if not request.user.is_superuser:
-        return redirect('error')
-
-    # Obtener el usuario a editar
-    user = User.objects.get(pk=user_id)
-    
-    if request.method == 'POST':
-        # Crear formularios con los datos enviados en la solicitud POST
-        user_form = UserForm(request.POST, instance=user)
-        profile_form = ProfileForm(request.POST, request.FILES, instance=user.profile)
-        group = request.POST.get('group')
-
-        # Verificar si los formularios son válidos
-        if user_form.is_valid() and profile_form.is_valid():
-            try:
-                # Guardar los formularios
+    try:
+        user = get_object_or_404(User, id=user_id)
+        
+        if request.method == 'POST':
+            user_form = UserForm(request.POST, instance=user)
+            profile_form = ProfileForm(request.POST, request.FILES, instance=user.profile)
+            
+            if user_form.is_valid() and profile_form.is_valid():
                 user_form.save()
-                profile_form.save()
-                # Actualizar los grupos del usuario
-                user.groups.clear()
-                user.groups.add(group)
-                # Redirigir a la página de detalles del usuario
-                return redirect('usuario_detalles', pk=user.id)
-            except forms.ValidationError as e:
-                profile_form.add_error('rut', e)
-
-    else:
-        # Crear formularios con los datos actuales del usuario
-        user_form = UserForm(instance=user)
-        profile_form = ProfileForm(instance=user.profile)
-
-    # Contexto para renderizar la plantilla
-    context = {
-        'user_form': user_form,
-        'profile_form': profile_form
-    }
-    return render(request, 'usuarios_detalles.html', context)
+                profile = profile_form.save(commit=False)
+                
+                if 'image' in request.FILES:
+                    profile.image = request.FILES['image']
+                profile.save()
+                
+                messages.success(request, 'Usuario actualizado correctamente')
+                return redirect('usuario_detalles', pk=user.id)  # Corregido aquí
+            else:
+                messages.error(request, 'Por favor corrija los errores')
+                return render(request, 'superuser_edit.html', {
+                    'user_form': user_form,
+                    'profile_form': profile_form,
+                    'user_id': user_id
+                })
+    except Exception as e:
+        messages.error(request, f'Error: {str(e)}')
+        return redirect('usuario_detalles', pk=user_id)  # Corregido aquí también
 
 #hasta aqui la actualizacion de la informacion de un usuario
 
@@ -895,6 +886,8 @@ def new_odontogram(request):
         'odontogram': odontogram,
         }
     )
+    
+    
 
 
 def tooth_view(request, pk_mouth, nb_tooth):
@@ -1596,24 +1589,52 @@ def verify_mercadopago_credentials():
 
         
 @add_group_name_to_context
-class CrearConsultaView(CreateView):
+class CrearConsultaView(UserPassesTestMixin, CreateView):
     model = Consulta
     form_class = ConsultaForm
     template_name = 'crear_consulta.html'
+
+    def test_func(self):
+        # Verificar si el usuario es ejecutivo
+        return self.request.user.groups.filter(name='ejecutivos').exists()
+
+    def handle_no_permission(self):
+        messages.error(self.request, 'No tiene permisos para crear consultas')
+        return redirect('consultas')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Mostrar solo los campos necesarios para el ejecutivo
+        form.fields['profesional'].required = True
+        form.fields['fecha'].required = True
+        form.fields['hora'].required = True
+        form.fields['precio'].required = True
+        
+        # Ocultar campos que completará el cliente
+        if 'nombre_completo' in form.fields:
+            del form.fields['nombre_completo']
+        if 'rut' in form.fields:
+            del form.fields['rut']
+        if 'email' in form.fields:
+            del form.fields['email']
+        if 'telefono' in form.fields:
+            del form.fields['telefono']
+            
+        return form
 
     def form_valid(self, form):
         try:
             consulta = form.save(commit=False)
             consulta.estado_pago = 'pendiente'
+            consulta.estado = 'disponible'
             consulta.save()
             
             messages.success(
                 self.request, 
-                'Consulta creada correctamente. Por favor, complete el pago.'
+                'Consulta creada correctamente'
             )
             
-            # Redirigir a la vista de reserva con ID de consulta
-            return redirect('reservar_consulta', pk=consulta.pk)
+            return redirect('consultas')
             
         except Exception as e:
             messages.error(
@@ -1630,9 +1651,6 @@ class CrearConsultaView(CreateView):
                     f'Error en el campo {field}: {error}'
                 )
         return self.render_to_response(self.get_context_data(form=form))
-
-    def get_success_url(self):
-        return reverse('reservar_consulta', kwargs={'pk': self.object.pk})
 
 base_url = 'https://l50nf88k-8000.brs.devtunnels.ms'
 
@@ -1703,52 +1721,71 @@ class Crear_preferencia(View):
 
 
 
+class ReservarConsultaView(View):
+    def get(self, request, pk):
+        try:
+            consulta = get_object_or_404(Consulta, pk=pk)
+            return render(request, 'reservar_consulta.html', {
+                'consulta': consulta
+            })
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return redirect('consultas')
+
+    def post(self, request, pk):
+        try:
+            consulta = get_object_or_404(Consulta, pk=pk)
+            
+            # Guardar datos del formulario en sesión
+            datos_usuario = {
+                'nombre_completo': request.POST.get('nombre_completo'),
+                'rut': request.POST.get('rut'),
+                'email': request.POST.get('email'),
+                'telefono': request.POST.get('telefono')
+            }
+            
+            # Validar datos
+            if not all(datos_usuario.values()):
+                messages.error(request, 'Todos los campos son requeridos')
+                return render(request, 'reservar_consulta.html', {
+                    'consulta': consulta
+                })
+            
+            # Guardar en sesión
+            request.session[f'datos_consulta_{pk}'] = datos_usuario
+            
+            return redirect('crear_preferencia', consulta_id=pk)
+            
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return redirect('consultas')
+
+
 def payment_success(request, consulta_id):
     try:
-        logger.info(f"Procesando pago de consulta {consulta_id}")
-        
         consulta = get_object_or_404(Consulta, id=consulta_id)
-        payment_id = request.GET.get('payment_id')
-        status = request.GET.get('status')
         
-        # Verificar si el pago fue aprobado
-        if status == 'approved':
-            # Actualizar la consulta con datos de pago
-            consulta.payment_id = payment_id
-            consulta.pagada = True
-            consulta.estado_pago = 'completado'
+        # Recuperar datos de la sesión
+        datos_usuario = request.session.get(f'datos_consulta_{consulta_id}')
+        
+        if datos_usuario:
+            # Actualizar consulta con datos del usuario
+            consulta.nombre_completo = datos_usuario['nombre_completo']
+            consulta.rut = datos_usuario['rut']
+            consulta.email = datos_usuario['email']
+            consulta.telefono = datos_usuario['telefono']
             consulta.estado = 'vendida'
-            
-            # Usar datos originales del formulario
-            consulta.nombre_completo = consulta.nombre_completo
-            consulta.email = consulta.email
-            consulta.telefono = consulta.telefono
-            consulta.rut = consulta.rut
-            
-            # Registrar fecha de compra
-            consulta.fecha_compra = timezone.now()
-            
-            # Si el usuario está autenticado, registrarlo como comprador
-            if request.user.is_authenticated:
-                consulta.comprador = request.user
-                
+            consulta.estado_pago = 'completado'
+            consulta.pagada = True
             consulta.save()
             
-            logger.info(f"Consulta {consulta_id} marcada como pagada")
-            messages.success(request, 'Pago realizado con éxito. La consulta ha sido reservada.')
+            # Limpiar datos de la sesión
+            del request.session[f'datos_consulta_{consulta_id}']
             
-            return render(request, 'payment_success.html', {
-                'consulta': consulta,
-                'payment_id': payment_id,
-                'status': status
-            })
-        else:
-            messages.warning(request, 'El pago no fue aprobado')
-            return redirect('consultas')
-            
+        return render(request, 'payment_success.html', {'consulta': consulta})
+        
     except Exception as e:
-        logger.error(f"Error en payment_success: {str(e)}")
-        messages.error(request, 'Error al procesar el pago')
+        messages.error(request, f'Error: {str(e)}')
         return redirect('consultas')
 
 

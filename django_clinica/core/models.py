@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.db.models.signals import  post_save, post_delete
 from django.dispatch import  receiver
 from django.utils.timezone import now
+from django.core.validators import MinLengthValidator, MinValueValidator,FileExtensionValidator
+from django.core.exceptions import ValidationError
 # Create your models here.
 
 #servicios aka definiremos el servicio que ofreceremos o alguna otra acitividad que se requiera
@@ -103,37 +105,87 @@ class Servicios(models.Model):
 #solicitud de servicios aqui permitiremos que el cliente haga solicitud de algun servicio que creamos antes
 
 #solicitud de servicio o registro de servicio
-# Modelo para registrar solicitudes de servicios por parte de los clientes
+
 class RegistroServicio(models.Model):
-    # Relación con el modelo Servicios, indica el servicio que se solicita
-    servicio = models.ForeignKey(Servicios, on_delete=models.CASCADE, verbose_name='Servicio')
+    servicio = models.ForeignKey(
+        Servicios, 
+        on_delete=models.CASCADE, 
+        verbose_name='Servicio'
+    )
     
-    # Relación con el modelo User, limitado al grupo "clientes", indica qué cliente solicita el servicio
     cliente = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,  # Si el cliente se elimina, también se elimina la solicitud
-        related_name='cliente_registrado',  # Relaciona la solicitud con el cliente
-        limit_choices_to={'groups__name': 'clientes'},  # Limita los clientes a aquellos que están en el grupo "clientes"
+        on_delete=models.CASCADE,
+        related_name='cliente_registrado',
+        limit_choices_to={'groups__name': 'clientes'},
         verbose_name='cliente'
     )
     
-    # Campo booleano que indica si la solicitud de servicio está habilitada o no
-    enabled = models.BooleanField(default=True, verbose_name='Habilitado')
+    enabled = models.BooleanField(
+        default=True, 
+        verbose_name='Habilitado'
+    )
     
-    # Nuevo campo de observación para que el cliente o profesional pueda agregar notas adicionales a la solicitud
-    observacion = models.TextField(null=True, blank=True, verbose_name='Observación')
-    archivo = models.FileField(upload_to='archivos/', null=True, blank=True)
-    odontograma = models.ImageField(upload_to='odontogramas/', null=True, blank=True)
+    observacion = models.TextField(
+        null=True, 
+        blank=True, 
+        verbose_name='Observación',
+        validators=[
+            MinLengthValidator(10, 'La observación debe tener al menos 10 caracteres')
+        ]
+    )
+    
+    archivo = models.FileField(
+        upload_to='archivos/', 
+        null=True, 
+        blank=True,
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+                message='Formato de archivo no soportado'
+            )
+        ]
+    )
+    
+    odontograma = models.ImageField(
+        upload_to='odontogramas/', 
+        null=True, 
+        blank=True,
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['jpg', 'jpeg', 'png'],
+                message='Solo se permiten imágenes JPG o PNG'
+            )
+        ]
+    )
 
-    # Método para representar la solicitud en formato de texto, mostrando el nombre de usuario del cliente y el servicio
+    def clean(self):
+        # Validar que el cliente pertenece al grupo correcto
+        if not self.cliente.groups.filter(name='clientes').exists():
+            raise ValidationError({
+                'cliente': 'El usuario debe pertenecer al grupo de clientes'
+            })
+
+        # Validar tamaño de archivos
+        if self.archivo and self.archivo.size > 5*1024*1024:  # 5MB
+            raise ValidationError({
+                'archivo': 'El archivo no debe superar los 5MB'
+            })
+
+        if self.odontograma and self.odontograma.size > 2*1024*1024:  # 2MB
+            raise ValidationError({
+                'odontograma': 'La imagen no debe superar los 2MB'
+            })
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f'{self.cliente.username} - {self.servicio}'
 
-    # Configuración adicional para el modelo en el administrador de Django
     class Meta:
-        # Nombre en singular para el modelo
         verbose_name = 'solicitud de servicio'
-        # Nombre plural para el modelo
         verbose_name_plural = 'solicitudes de servicios'
 
 #hasta aqui el registro o solicitudes de servicio        
@@ -354,7 +406,14 @@ class Consulta(models.Model):
         limit_choices_to={'groups__name': 'profesionales'}, 
         verbose_name='Profesional'
     )
-    precio = models.DecimalField(max_digits=10, decimal_places=2, default=50000)
+    precio = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        verbose_name='Precio',
+        validators=[
+            MinValueValidator(0, 'El precio no puede ser negativo')
+        ]
+    )
     
     # Campos de pago y estado
     pagada = models.BooleanField(default=False)

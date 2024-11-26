@@ -96,12 +96,21 @@ class RegisterForm(UserCreationForm):
             raise forms.ValidationError('Este RUT ya está registrado')
         return rut
 
-    def validar_rut(self, rut):
+    def validar_rut(rut):
+        """
+        Ejemplos de RUT válidos:
+        - 11.111.111-1
+        - 22.222.222-2 
+        - 33.333.333-3
+        - 44.444.444-4
+        - 55.555.555-5
+        """
         try:
             rut = rut.replace(".", "").replace("-", "")
             if not re.match(r'^\d{7,8}[0-9Kk]{1}$', rut):
                 return False
             
+            # Algoritmo de validación
             valor = rut[:-1]
             dv = rut[-1].upper()
             suma = 0
@@ -1163,12 +1172,40 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 class ConsultaForm(forms.ModelForm):
-    fecha = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Fecha')
-    hora = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}), label='Hora')
-
     class Meta:
         model = Consulta
         fields = ['profesional', 'fecha', 'hora', 'precio']
+        widgets = {
+            'profesional': forms.Select(
+                attrs={'class': 'form-control'}
+            ),
+            'fecha': forms.DateInput(
+                attrs={
+                    'class': 'form-control',
+                    'type': 'date'
+                }
+            ),
+            'hora': forms.TimeInput(
+                attrs={
+                    'class': 'form-control',
+                    'type': 'time'
+                }
+            ),
+            'precio': forms.NumberInput(
+                attrs={
+                    'class': 'form-control',
+                    'min': '0',
+                    'step': '1000',
+                    'placeholder': 'Ingrese el precio'
+                }
+            )
+        }
+
+    def clean_precio(self):
+        precio = self.cleaned_data.get('precio')
+        if precio is not None and precio < 0:
+            raise forms.ValidationError('El precio no puede ser negativo')
+        return precio
 
 
 class ReservaConsultaForm(forms.ModelForm):  # Corregir aquí

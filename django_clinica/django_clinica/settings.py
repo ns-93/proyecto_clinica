@@ -148,6 +148,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Ruta completa para los archivos multimedia.
 
+# Asegurar que existen los directorios
+USERS_MEDIA_ROOT = os.path.join(MEDIA_ROOT, 'users')
+os.makedirs(USERS_MEDIA_ROOT, exist_ok=True)
+
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
