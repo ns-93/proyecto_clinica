@@ -6,6 +6,15 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
+        <div class="form-group">
+            <label for="cliente">Seleccionar Cliente (opcional)</label>
+            <select class="form-control" id="cliente" name="cliente">
+                <option value="">-- Seleccionar Cliente --</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}">{{ cliente.get_full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
         <button type="submit" class="btn btn-primary">Guardar</button>
     </form>
     <a href="{% url 'reservas_profesionales' %}" class="btn btn-secondary">Volver Atrás</a>

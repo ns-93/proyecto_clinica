@@ -1216,9 +1216,22 @@ class ReservaCreateView(UserPassesTestMixin, CreateView):
     def handle_no_permission(self):
         return redirect('error')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['clientes'] = User.objects.filter(groups__name='clientes')
+        return context
+
     def form_valid(self, form):
         reserva = form.save(commit=False)
         reserva.profesional = self.request.user
+        cliente_id = self.request.POST.get('cliente')
+        if cliente_id:
+            cliente = User.objects.filter(id=cliente_id).first()
+            if cliente:
+                reserva.cliente = cliente
+            else:
+                messages.error(self.request, 'Cliente no encontrado.')
+                return self.form_invalid(form)
         reserva.save()
         messages.success(self.request, 'La reserva se ha creado correctamente.')
         return super().form_valid(form)
