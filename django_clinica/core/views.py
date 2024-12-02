@@ -104,7 +104,12 @@ def add_group_name_to_context(view_class):
 # VISTA DE LA PÁGINA PRINCIPAL
 @add_group_name_to_context
 class HomeView(TemplateView):
-    template_name= 'home.html'
+    template_name = 'home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profesionales'] = User.objects.filter(groups__name='profesionales')
+        return context
 
 
 # VISTA DE LA PÁGINA DE PRECIOS Y OFERTAS
