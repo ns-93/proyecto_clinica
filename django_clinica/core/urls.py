@@ -69,7 +69,7 @@ urlpatterns = [
     path('view/<int:pk_mouth>/', login_required(view_odonto), name='odontogram_in_codes'),
     
     # Rutas para las vistas de reservas
-    path('reservas/', login_required(ReservaListView.as_view()), name='reservas_disponibles'),
+    path('reservas/', login_required(ReservaListView.as_view()), name='reservas'),
     path('reservas/nueva/', login_required(ReservaCreateView.as_view()), name='crear_reserva'),
     path('reservas/<int:pk>/editar/', login_required(ReservaUpdateView.as_view()), name='editar_reserva'),
     path('reservas/<int:pk>/eliminar/', login_required(ReservaDeleteView.as_view()), name='eliminar_reserva'),

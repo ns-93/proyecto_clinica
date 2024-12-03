@@ -1,114 +1,163 @@
-<div class="container mt-3">
-    <!-- Título principal -->
-    <h5>TODOS LOS SERVICIOS</h5>
-
-    <!-- Card para servicios en progreso -->
-    <div class="card text-bg-warning shadow mt-3 mb-3">
-        <div class="card-header">SERVICIOS EN PROGRESO</div>
-        <div class="card-body">
-            {% if servicios_progreso %}
-                <ul class="list-group">
-                    {% for servicio in servicios_progreso %}
-                        {% with registro_count=servicio.registroservicio_set.count %}
-                            <li class="list-group-item list-group-item-warning">
-                                {{ servicio.name }}
-                                <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-sm btn-warning float-end">
-                                    {% if servicio.status == 'P' %}
-                                        Ver Asistencias
-                                    {% endif %}
-                                    <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
-                                </a>
-                            </li>
-                        {% endwith %}
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="alert alert-warning" role="alert">
-                    No hay Servicios en progreso hasta el momento
+<div class="container-fluid py-4">
+    <h2 class="mb-4 text-center">Panel de Servicios</h2>
+    <div class="row g-4">
+        <!-- Card para servicios en progreso -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning bg-opacity-10 d-flex align-items-center">
+                    <i class="bi bi-clock me-2"></i>
+                    <span class="fw-bold">SERVICIOS EN PROGRESO</span>
                 </div>
-            {% endif %}
+                <div class="card-body p-0">
+                    <div class="row">
+                        <div class="col-md-3 d-flex align-items-center justify-content-center py-3">
+                            <h5 class="mb-0">Servicios Activos</h5>
+                        </div>
+                        <div class="col-md-9">
+                            {% if servicios_progreso %}
+                                <ul class="list-group list-group-flush">
+                                    {% for servicio in servicios_progreso %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                            <span>{{ servicio.name }}</span>
+                                            <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-outline-warning btn-sm d-flex align-items-center">
+                                                {% if servicio.status == 'P' %}
+                                                    Ver Asistencias
+                                                {% endif %}
+                                                <span class="badge bg-warning text-dark ms-2 rounded-pill">
+                                                    {% if servicio.registroservicio_set %}
+                                                        {{ servicio.registroservicio_set.count }}
+                                                    {% else %}
+                                                        0
+                                                    {% endif %}
+                                                </span>
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="alert alert-warning m-3" role="alert">
+                                    No hay Servicios en progreso hasta el momento
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para servicios en solicitud -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info bg-opacity-10 d-flex align-items-center">
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    <span class="fw-bold">SERVICIOS EN SOLICITUD</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="row">
+                        <div class="col-md-3 d-flex align-items-center justify-content-center py-3">
+                            <h5 class="mb-0">Solicitudes Pendientes</h5>
+                        </div>
+                        <div class="col-md-9">
+                            {% if servicios_solicitud %}
+                                <ul class="list-group list-group-flush">
+                                    {% for servicio in servicios_solicitud %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                            <span>{{ servicio.name }}</span>
+                                            <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-outline-info btn-sm d-flex align-items-center">
+                                                {% if servicio.status == 'S' %}
+                                                    Ver Asistencias
+                                                {% endif %}
+                                                <span class="badge bg-info text-dark ms-2 rounded-pill">
+                                                    {% if servicio.registroservicio_set %}
+                                                        {{ servicio.registroservicio_set.count }}
+                                                    {% else %}
+                                                        0
+                                                    {% endif %}
+                                                </span>
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="alert alert-info m-3" role="alert">
+                                    No hay Servicios en solicitud hasta el momento
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card para servicios finalizados -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary bg-opacity-10 d-flex align-items-center">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span class="fw-bold">SERVICIOS FINALIZADOS</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="row">
+                        <div class="col-md-3 d-flex align-items-center justify-content-center py-3">
+                            <h5 class="mb-0">Servicios Completados</h5>
+                        </div>
+                        <div class="col-md-9">
+                            {% if servicios_finalizados %}
+                                <ul class="list-group list-group-flush">
+                                    {% for servicio in servicios_finalizados %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                            <span>{{ servicio.name }}</span>
+                                            <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+                                                {% if servicio.status == 'F' %}
+                                                    Ver Asistencias
+                                                {% endif %}
+                                                <span class="badge bg-secondary text-light ms-2 rounded-pill">
+                                                    {% if servicio.registroservicio_set %}
+                                                        {{ servicio.registroservicio_set.count }}
+                                                    {% else %}
+                                                        0
+                                                    {% endif %}
+                                                </span>
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="alert alert-secondary m-3" role="alert">
+                                    No hay Servicios finalizados hasta el momento
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Card para servicios en solicitud -->
-    <div class="card text-bg-success shadow mb-3">
-        <div class="card-header">SERVICIOS EN SOLICITUD</div>
-        <div class="card-body">
-            {% if servicios_solicitud %}
-                <ul class="list-group">
-                    {% for servicio in servicios_solicitud %}
-                        {% with registro_count=servicio.registroservicio_set.count %}
-                            <li class="list-group-item list-group-item-success">
-                                {{ servicio.name }}
-                                <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-sm btn-success float-end">
-                                    {% if servicio.status == 'S' %}
-                                        Ver Asistencias
-                                    {% endif %}
-                                    <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
-                                </a>
-                            </li>
-                        {% endwith %}
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="alert alert-success" role="alert">
-                    No hay Servicios en solicitud hasta el momento
-                </div>
-            {% endif %}
-        </div>
-    </div>
 
-    <!-- Card para servicios finalizados -->
-    <div class="card text-bg-danger shadow mb-3">
-        <div class="card-header">SERVICIOS FINALIZADOS</div>
-        <div class="card-body">
-            {% if servicios_finalizados %}
-                <ul class="list-group">
-                    {% for servicio in servicios_finalizados %}
-                        {% with registro_count=servicio.registroservicio_set.count %}
-                            <li class="list-group-item list-group-item-danger">
-                                {{ servicio.name }}
-                                <a href="{% url 'lista_asistencia' servicio_id=servicio.id %}" class="btn btn-sm btn-danger float-end">
-                                    {% if servicio.status == 'F' %}
-                                        Ver Asistencias
-                                    {% endif %}
-                                    <span class="badge rounded-pill bg-light text-danger">{{ registro_count }}</span>
-                                </a>
-                            </li>
-                        {% endwith %}
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="alert alert-danger" role="alert">
-                    No hay Servicios finalizados hasta el momento
-                </div>
-            {% endif %}
-        </div>
-    </div>
     <hr>
     <div>
         {% if group_name == 'ejecutivos' %}
-        <div class="btn-group" role="group">
-            <!-- Botones existentes -->
-            <a href="{% url 'consultas_pagadas' %}" class="btn btn-success">
-                <i class="fas fa-check-circle"></i> Consultas Pagadas
-            </a>
-            <a href="{% url 'consultas_pendientes' %}" class="btn btn-warning">
-                <i class="fas fa-clock"></i> Consultas Pendientes
-            </a>
-            <a href="{% url 'crear_consulta' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Crear Consulta
-            </a>
-            <br>
-            <hr>
-            <a href="{% url 'servicios_dashboard' %}" class="btn btn-info">
-                <i class="fas fa-chart-line"></i> Dashboard Servicios
-            </a>
-            <a href="{% url 'ventas_dashboard' %}" class="btn btn-primary">
-                <i class="fas fa-chart-line me-2" aria-hidden="true"></i>
-                <span>Ver Dashboard de Ventas</span>
-            </a>
+        <div class="mt-5">
+            <h3 class="mb-3">Acciones para Ejecutivos</h3>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'consultas_pagadas' %}" class="btn btn-success">
+                    <i class="bi bi-check-circle me-2"></i>Consultas Pagadas
+                </a>
+                <a href="{% url 'consultas_pendientes' %}" class="btn btn-warning">
+                    <i class="bi bi-clock me-2"></i>Consultas Pendientes
+                </a>
+                <a href="{% url 'crear_consulta' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Crear Consulta
+                </a>
+                <a href="{% url 'servicios_dashboard' %}" class="btn btn-info">
+                    <i class="bi bi-graph-up me-2"></i>Dashboard Servicios
+                </a>
+                <a href="{% url 'ventas_dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-bar-chart-line me-2"></i>Dashboard de Ventas
+                </a>
+            </div>
         </div>
-        {% endif %}
-    </div>
+    {% endif %}
 </div>

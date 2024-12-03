@@ -385,7 +385,7 @@ class ServicioEditView(UserPassesTestMixin, UpdateView):
             cliente = User.objects.get(id=cliente_id)
             RegistroServicio.objects.update_or_create(servicio=servicio, defaults={'cliente': cliente})
         messages.success(self.request, 'El servicio se ha actualizado correctamente')
-        return redirect(self.success_url)
+        return redirect('reservas')  # Reemplaza 'valid_view_name' con el nombre correcto de la vista o patrón de URL
 
     # Método para manejar el caso en el que el formulario es inválido
     def form_invalid(self, form):
@@ -426,13 +426,14 @@ class ServicioDeleteView(UserPassesTestMixin, DeleteView):
 class ReservarHoraView(LoginRequiredMixin, View):
     def get(self, request, reserva_id):
         reserva = get_object_or_404(Reserva, id=reserva_id)
-        if request.user.groups.filter(name='clientes').exists() and not reserva.cliente:
-            if not Reserva.objects.filter(cliente=request.user).exists():
+        if request.user.groups.filter(name='clientes').exists():
+            servicios_en_progreso = RegistroServicio.objects.filter(cliente=request.user, servicio__status='P')
+            if servicios_en_progreso.exists() and not reserva.cliente:
                 reserva.cliente = request.user
                 reserva.save()
                 messages.success(request, 'Hora reservada exitosamente.')
             else:
-                messages.error(request, 'Ya tienes una reserva activa.')
+                messages.error(request, 'No puedes reservar una hora. Solo los pacientes con servicios en progreso pueden reservar.')
         else:
             messages.error(request, 'No se pudo reservar la hora.')
         return redirect('profile')
@@ -1492,8 +1493,7 @@ class AddAboutView(UserPassesTestMixin, CreateView):
         messages.error(self.request, 'Ha ocurrido un error al agregar la información de "Acerca de".')
         return self.render_to_response(self.get_context_data(form=form))
 
-#consutal y metodo de pago
-
+#cosultas y metodo de pago
 @add_group_name_to_context
 class ConsultasView(TemplateView):
     template_name = 'consultas.html'
