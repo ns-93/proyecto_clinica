@@ -52,7 +52,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item"><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li>
-                    <li class="nav-item"><a href="{% url 'servicios' %}" class="nav-link px-2 text-white">Servicios</a></li>
+                    {% if group_name == 'administradores' or group_name == 'ejecutivos' or group_name == 'profesionales' %}
+                        <li class="nav-item"><a href="{% url 'servicios' %}" class="nav-link px-2 text-white">Servicios</a></li>
+                    {% endif %}
+                    <li class="nav-item"><a href="{% url 'lista_especialidades' %}" class="nav-link px-2 text-white">Especialidades</a></li>
                     <li class="nav-item"><a href="{% url 'consultas' %}" class="nav-link px-2 text-white">Agendar Cita</a></li>
                     {% if not user.is_authenticated or group_name == 'clientes' or group_name == 'ejecutivos' %}
                         <li class="nav-item"><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>
@@ -80,7 +83,25 @@
 
     <!-- Main Content -->
     <main>
-        {% block content %}{% endblock %}
+        {% block content %}
+        {% if especialidades %}
+            <div class="container mt-5">
+                <div class="row">
+                    {% for especialidad in especialidades %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="{{ especialidad.imagen.url }}" class="card-img-top" alt="{{ especialidad.nombre }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ especialidad.nombre }}</h5>
+                                    <p class="card-text">{{ especialidad.descripcion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        {% endblock %}
     </main>
 
     <!-- Footer -->

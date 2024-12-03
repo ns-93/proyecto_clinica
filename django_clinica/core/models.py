@@ -1,10 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import  post_save, post_delete
-from django.dispatch import  receiver
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 from django.utils.timezone import now
-from django.core.validators import MinLengthValidator, MinValueValidator,FileExtensionValidator
+from django.core.validators import MinLengthValidator, MinValueValidator, FileExtensionValidator
 from django.core.exceptions import ValidationError
+
+# Define la clase Especialidad antes de cualquier importación que la utilice
+class Especialidad(models.Model):
+    nombre = models.CharField(max_length=100, validators=[MinLengthValidator(3, 'El nombre debe tener al menos 3 caracteres')])
+    descripcion = models.TextField(blank=True, validators=[MinLengthValidator(10, 'La descripción debe tener al menos 10 caracteres')])
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = 'especialidad'
+        verbose_name_plural = 'especialidades'
+
 # Create your models here.
 
 #servicios aka definiremos el servicio que ofreceremos o alguna otra acitividad que se requiera
@@ -15,9 +28,8 @@ from django.core.exceptions import ValidationError
 class Servicios(models.Model):
     STATUS_CHOICES = [
         ('S', 'Solicitado'),
-        ('A', 'Aprobado'),
-        ('R', 'Rechazado'),
-        ('C', 'Completado')
+        ('P', 'Progresso'),
+        ('F', 'Finalizado')
     ]
 
     name = models.CharField(
@@ -68,6 +80,8 @@ class Servicios(models.Model):
         default='S',
         verbose_name='Estado'
     )
+
+    especialidad = models.ForeignKey(Especialidad, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Especialidad')
 
     def clean(self):
         # Validar que el profesional pertenece al grupo correcto

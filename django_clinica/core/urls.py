@@ -1,7 +1,17 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from .views import HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, ReservaDeleteClienteView, FaqView, PostQuestionView, PostAnswerView, AboutView, EditAboutView, AddAboutView, ConsultasView, CrearConsultaView, ConfirmarPagoView, VerificarConsultaView, ReservarConsultaView, webhook, CheckoutView, EditarConsultaView, EliminarConsultaView, payment_success, payment_failure, payment_pending, ConsultasPagadasView, ConsultasPendientesView
-from .views import Crear_preferencia, CheckoutView,ServiciosDashboardView, VentasDashboardView
+from .views import (
+    HomeView, PricingView, RegisterView, ProfileView, ServiciosView, ServicioCreateView, ErrorView, 
+    ServicioEditView, ServicioDeleteView, ServicioEnrollmentView, ServiciosListView, UpdateInfoclienteView, 
+    AgregarAsistenciaView, AsistenciaListView, ProfilePasswordChangeView, AddUserView, CustomLoginView, 
+    UserDetailsView, superuser_edit, new_odontogram, tooth_view, update_odonto, view_odonto, ReservaCreateView, 
+    ReservaListView, ReservaUpdateView, ReservaDeleteView, ReservarHoraView, reservas_profesionales, 
+    ReservaDeleteClienteView, FaqView, PostQuestionView, PostAnswerView, AboutView, EditAboutView, AddAboutView, 
+    ConsultasView, CrearConsultaView, ConfirmarPagoView, VerificarConsultaView, ReservarConsultaView, webhook, 
+    CheckoutView, EditarConsultaView, EliminarConsultaView, payment_success, payment_failure, payment_pending, 
+    ConsultasPagadasView, ConsultasPendientesView, Crear_preferencia, ServiciosDashboardView, VentasDashboardView, 
+    EspecialidadCreateView, EspecialidadListView, EspecialidadUpdateView, EspecialidadDeleteView
+)
 from django.contrib.auth.decorators import login_required
 from .forms import CustomPasswordResetForm  # Importar CustomPasswordResetForm
 
@@ -131,6 +141,12 @@ urlpatterns = [
     path('servicios/dashboard/', ServiciosDashboardView.as_view(), name='servicios_dashboard'),
     
     path('ventas/dashboard/', VentasDashboardView.as_view(), name='ventas_dashboard'),
+
+    # Rutas para la gestión de especialidades
+    path('especialidades/', login_required(EspecialidadListView.as_view()), name='especialidades'),
+    path('especialidades/create/', login_required(EspecialidadCreateView.as_view()), name='crear_especialidad'),
+    path('especialidades/<int:pk>/edit/', login_required(EspecialidadUpdateView.as_view()), name='editar_especialidad'),
+    path('especialidades/<int:pk>/delete/', login_required(EspecialidadDeleteView.as_view()), name='eliminar_especialidad'),
 ]
 
 

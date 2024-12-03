@@ -34,12 +34,13 @@ from django.http import HttpResponse
 from dotenv import load_dotenv
 import json
 import logging
+from .models import Especialidad
+from .forms import EspecialidadForm
 
 
 
 load_dotenv()
 # Create your views here.
-
 # FUNCION PARA CONVERTIR EL PLURAL DE UN GRUPO A SU SINGULAR
 # Diccionario que mapea los nombres de grupos en plural a su forma singular
 def plural_to_singular(plural):
@@ -244,6 +245,8 @@ class ProfileView(TemplateView):
             context['servicios_solicitud'] = all_services.filter(status='S')
             context['servicios_progreso'] = all_services.filter(status='P')
             context['servicios_finalizados'] = all_services.filter(status='F')
+            # Obtener todas las especialidades
+            context['especialidades'] = Especialidad.objects.all()
 
         return context
 
@@ -327,14 +330,22 @@ class ServicioCreateView(UserPassesTestMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['clientes'] = User.objects.filter(groups__name='clientes')
+        context['especialidades'] = Especialidad.objects.all()
         if self.request.user.groups.filter(name='profesionales').exists():
             context['profesional'] = self.request.user
         return context
+
 
     def form_valid(self, form):
         servicio = form.save(commit=False)
         if self.request.user.groups.filter(name='profesionales').exists():
             servicio.profesional = self.request.user
+        especialidad_id = self.request.POST.get('especialidad')
+        if especialidad_id:
+            especialidad = Especialidad.objects.get(id=especialidad_id)
+            servicio.especialidad = especialidad
+            servicio.name = especialidad.nombre
+            servicio.description = especialidad.descripcion
         servicio.save()
         cliente_id = self.request.POST.get('cliente')
         if cliente_id:
@@ -863,14 +874,8 @@ def superuser_edit(request, user_id):
         
         if request.method == 'POST':
             user_form = UserForm(request.POST, instance=user)
-            profile_form = ProfileForm(request.POST, request.FILES, instance=user.profile)
-            
-            if user_form.is_valid() and profile_form.is_valid():
-                user_form.save()
-                profile = profile_form.save(commit=False)
-                
-                if 'image' in request.FILES:
-                    profile.image = request.FILES['image']
+            if 'image' in request.FILES:
+                profile.image = request.FILES['image']
                 profile.save()
                 
                 messages.success(request, 'Usuario actualizado correctamente')
@@ -2086,5 +2091,87 @@ class VentasDashboardView(TemplateView):
                 'fallido': consultas.filter(estado_pago='fallido').count()
             }
         })
-        
         return context
+
+@add_group_name_to_context
+class EspecialidadCreateView(UserPassesTestMixin, CreateView):
+    model = Especialidad
+    form_class = EspecialidadForm
+    template_name = 'create_especialidad.html'
+    success_url = reverse_lazy('profile')  # Cambiar la URL de redirección a 'profile'
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='administradores').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        especialidad = form.save(commit=False)
+        especialidad.valor_aproximado = self.request.POST.get('valor_aproximado')
+        especialidad.imagen = self.request.FILES.get('imagen')
+        especialidad.save()
+        messages.success(self.request, 'La especialidad se ha creado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al crear la especialidad.')
+        return self.render_to_response(self.get_context_data(form=form))
+
+@add_group_name_to_context
+class EspecialidadListView(UserPassesTestMixin, ListView):
+    model = Especialidad
+    template_name = 'profile/admin_especialidades.html'
+    context_object_name = 'especialidades'
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='administradores').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+@add_group_name_to_context
+class EspecialidadUpdateView(UserPassesTestMixin, UpdateView):
+    model = Especialidad
+    form_class = EspecialidadForm
+    template_name = 'edit_especialidad.html'
+    success_url = reverse_lazy('profile')  # Cambiar la URL de redirección a 'profile'
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='administradores').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'La especialidad se ha actualizado correctamente.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Ha ocurrido un error al actualizar la especialidad.')
+        return self.render_to_response(self.get_context_data(form=form))
+
+@add_group_name_to_context
+class EspecialidadDeleteView(UserPassesTestMixin, DeleteView):
+    model = Especialidad
+    template_name = 'delete_especialidad.html'
+    success_url = reverse_lazy('profile')  # Cambiar la URL de redirección a 'profile'
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='administradores').exists()
+
+    def handle_no_permission(self):
+        return redirect('error')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'La especialidad se ha eliminado correctamente.')
+        return super().delete(request, *args, **kwargs)
+
+from django.shortcuts import render
+from .models import Especialidad  # Asegúrate de importar el modelo Especialidad
+
+def lista_especialidades(request):
+    especialidades = Especialidad.objects.all()
+    return render(request, 'lista_especialidades.html', {'especialidades': especialidades})
+
+# ...existing code...

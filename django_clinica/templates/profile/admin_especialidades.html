@@ -1,0 +1,140 @@
+<!-- Botón para abrir el modal de crear especialidad -->
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createEspecialidadModal">Agregar Especialidad</button>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Valor Aproximado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for especialidad in especialidades %}
+                <tr>
+                    <td>{{ especialidad.nombre }}</td>
+                    <td>{{ especialidad.descripcion }}</td>
+                    <td>{{ especialidad.valor_aproximado }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editEspecialidadModal{{ especialidad.id }}">Editar</button>
+                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteEspecialidadModal{{ especialidad.id }}">Eliminar</button>
+                    </td>
+                </tr>
+
+                <!-- Modal para editar especialidad -->
+                <div class="modal fade" id="editEspecialidadModal{{ especialidad.id }}" tabindex="-1" aria-labelledby="editEspecialidadModalLabel{{ especialidad.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editEspecialidadModalLabel{{ especialidad.id }}">Editar Especialidad</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{% url 'editar_especialidad' especialidad.id %}" method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="nombre{{ especialidad.id }}" class="form-label">Nombre</label>
+                                        <input type="text" class="form-control" id="nombre{{ especialidad.id }}" name="nombre" value="{{ especialidad.nombre }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="descripcion{{ especialidad.id }}" class="form-label">Descripción</label>
+                                        <textarea class="form-control" id="descripcion{{ especialidad.id }}" name="descripcion" rows="3" required>{{ especialidad.descripcion }}</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="valor_aproximado{{ especialidad.id }}" class="form-label">Valor Aproximado</label>
+                                        <input type="number" class="form-control" id="valor_aproximado{{ especialidad.id }}" name="valor_aproximado" value="{{ especialidad.valor_aproximado }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="imagen{{ especialidad.id }}" class="form-label">Imagen</label>
+                                        <input type="file" class="form-control" id="imagen{{ especialidad.id }}" name="imagen">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Guardar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal para eliminar especialidad -->
+                <div class="modal fade" id="deleteEspecialidadModal{{ especialidad.id }}" tabindex="-1" aria-labelledby="deleteEspecialidadModalLabel{{ especialidad.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteEspecialidadModalLabel{{ especialidad.id }}">Eliminar Especialidad</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>¿Estás seguro de que deseas eliminar esta especialidad?</p>
+                                <form action="{% url 'eliminar_especialidad' especialidad.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para crear especialidad -->
+<div class="modal fade" id="createEspecialidadModal" tabindex="-1" aria-labelledby="createEspecialidadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createEspecialidadModalLabel">Agregar Nueva Especialidad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'crear_especialidad' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="valor_aproximado" class="form-label">Valor Aproximado</label>
+                        <input type="number" class="form-control" id="valor_aproximado" name="valor_aproximado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="imagen" class="form-label">Imagen</label>
+                        <input type="file" class="form-control" id="imagen" name="imagen" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Script para manejar la apertura del modal de edición con datos
+    $('#editEspecialidadModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var especialidadId = button.data('id');
+        var nombre = button.data('nombre');
+        var descripcion = button.data('descripcion');
+        
+        var modal = $(this);
+        modal.find('.modal-body #editEspecialidadForm').attr('action', '/especialidades/' + especialidadId + '/edit/');
+        modal.find('.modal-body #id_nombre').val(nombre);
+        modal.find('.modal-body #id_descripcion').val(descripcion);
+    });
+
+    // Script para manejar la apertura del modal de eliminación con datos
+    $('#deleteEspecialidadModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var especialidadId = button.data('id');
+        
+        var modal = $(this);
+        modal.find('.modal-body #deleteEspecialidadForm').attr('action', '/especialidades/' + especialidadId + '/delete/');
+    });
+</script>
