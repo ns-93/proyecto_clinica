@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm
 from accounts.models import Profile
-from .models import Servicios, Mouth, Reserva, About, Consulta
+from .models import Servicios, Mouth, Reserva, About, Consulta, Especialidad
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit
 from django.utils import timezone
@@ -257,38 +257,17 @@ class ProfileForm(forms.ModelForm):
 
 # Formulario de servicios
 class ServiciosForm(forms.ModelForm):
-    name = forms.CharField(
-        label='Nombre del Servicio',
-        validators=[
-            MinLengthValidator(3, 'El nombre debe tener al menos 3 caracteres')
-        ],
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Ingrese el nombre del servicio'
-        })
-    )
-
+    # Eliminar el campo de nombre
     description = forms.CharField(
         label='Descripción',
-        validators=[
-            MinLengthValidator(10, 'La descripción debe tener al menos 10 caracteres')
-        ],
-        widget=forms.Textarea(attrs={
-            'class': 'form-control',
-            'rows': 3,
-            'placeholder': 'Describa el servicio'
-        })
+        validators=[MinLengthValidator(10, 'La descripción debe tener al menos 10 caracteres')],
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describa el servicio'})
     )
 
     n_procedimientos = forms.IntegerField(
         label='Número de Procedimientos',
-        validators=[
-            MinValueValidator(1, 'Debe haber al menos 1 procedimiento')
-        ],
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'min': '1'
-        })
+        validators=[MinValueValidator(1, 'Debe haber al menos 1 procedimiento')],
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1'})
     )
 
     status = forms.ChoiceField(
@@ -300,7 +279,7 @@ class ServiciosForm(forms.ModelForm):
 
     class Meta:
         model = Servicios
-        fields = ['name', 'description', 'profesional', 'n_procedimientos', 'status']
+        fields = ['description', 'profesional', 'n_procedimientos', 'status']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -309,8 +288,7 @@ class ServiciosForm(forms.ModelForm):
         if user and user.groups.filter(name='profesionales').exists():
             self.fields['profesional'].queryset = User.objects.filter(id=user.id)
             self.fields['profesional'].initial = user
-        elif user and (user.groups.filter(name='administradores').exists() or 
-                    user.groups.filter(name='ejecutivos').exists()):
+        elif user and (user.groups.filter(name='administradores').exists() or user.groups.filter(name='ejecutivos').exists()):
             self.fields['profesional'].required = True
 
         self.helper = FormHelper()
@@ -319,19 +297,12 @@ class ServiciosForm(forms.ModelForm):
         self.helper.label_class = 'col-lg-2'
         self.helper.field_class = 'col-lg-8'
         self.helper.layout = Layout(
-            Field('name'),
             Field('description'),
             Field('profesional'),
             Field('n_procedimientos'),
             Field('status'),
             Submit('submit', 'Guardar', css_class='btn btn-primary mt-3')
         )
-
-    def clean_name(self):
-        name = self.cleaned_data.get('name')
-        if len(name.strip()) < 3:
-            raise forms.ValidationError('El nombre es demasiado corto')
-        return name.strip()
 
     def clean_description(self):
         description = self.cleaned_data.get('description')
@@ -1324,3 +1295,8 @@ class PagoForm(forms.Form):
             'required': 'El email es requerido',
             'invalid': 'Por favor ingrese un email válido'
         })
+
+class EspecialidadForm(forms.ModelForm):
+    class Meta:
+        model = Especialidad
+        fields = ['nombre', 'descripcion']

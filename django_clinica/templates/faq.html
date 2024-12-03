@@ -1,51 +1,118 @@
 {% extends 'base.html' %}
 
+{% block title %}Preguntas Frecuentes - Dental Knights{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-image: url('/media/imagenes/decoracion-clinica-dental-imagen-medicalta.jpg');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+    }
+    .faq-container {
+        background-color: rgba(248, 249, 250, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+    .question-card {
+        border: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+    .question-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .question-header {
+        background-color: rgba(233, 236, 239, 0.9);
+        border-bottom: 2px solid #0056b3;
+    }
+    .answer-form {
+        background-color: rgba(241, 243, 245, 0.9);
+        border-radius: 5px;
+        padding: 1rem;
+    }
+    .section-title {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+        color: #0056b3;
+    }
+    .section-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -10px;
+        width: 50px;
+        height: 3px;
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container my-5">
-    <h1 class="display-4 fw-normal text-body-emphasis text-center">Preguntas y Respuestas</h1>
+<div class="container faq-container">
+    <h1 class="display-4 fw-bold text-center mb-5 section-title">Preguntas Frecuentes</h1>
     <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h4>Publicar una Pregunta</h4>
+        <div class="col-lg-8 mx-auto">
+            <div class="card mb-4 question-card">
+                <div class="card-header question-header">
+                    <h4 class="mb-0">Publicar una Pregunta</h4>
                 </div>
                 <div class="card-body">
                     <form method="post" action="{% url 'post_question' %}">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="question" class="form-label">Tu Pregunta</label>
-                            <textarea class="form-control" id="question" name="question" rows="3" required></textarea>
+                            <textarea class="form-control" id="question" name="question" rows="3" required placeholder="Escribe tu pregunta aquí..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Publicar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-question-circle me-2"></i>Publicar Pregunta
+                        </button>
                     </form>
                 </div>
             </div>
-            <h4>Preguntas Recientes</h4>
+
+            <h4 class="mb-4 mt-5">Preguntas Recientes</h4>
             {% for question in questions %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5>{{ question.user.username }} preguntó:</h5>
+            <div class="card mb-4 question-card">
+                <div class="card-header question-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-circle me-2"></i>{{ question.user.username }} preguntó:
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <p>{{ question.text }}</p>
+                    <p class="lead">{{ question.text }}</p>
                     {% if question.answer %}
                     <div class="alert alert-success">
-                        <strong>Respuesta:</strong> {{ question.answer.text }}
+                        <h6 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Respuesta:</h6>
+                        <p class="mb-0">{{ question.answer.text }}</p>
                     </div>
                     {% elif user.is_authenticated and group_name == 'ejecutivos' %}
-                    <form method="post" action="{% url 'post_answer' question.id %}">
+                    <form method="post" action="{% url 'post_answer' question.id %}" class="answer-form mt-3">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="answer" class="form-label">Responder</label>
-                            <textarea class="form-control" id="answer" name="answer" rows="2" required></textarea>
+                            <textarea class="form-control" id="answer" name="answer" rows="2" required placeholder="Escribe tu respuesta aquí..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-success">Responder</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-reply-fill me-2"></i>Responder
+                        </button>
                     </form>
                     {% endif %}
                 </div>
+            </div>
+            {% empty %}
+            <div class="alert alert-info" role="alert">
+                <i class="bi bi-info-circle me-2"></i>Aún no hay preguntas. ¡Sé el primero en preguntar!
             </div>
             {% endfor %}
         </div>
     </div>
 </div>
 {% endblock %}
+

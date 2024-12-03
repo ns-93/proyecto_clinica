@@ -1,33 +1,36 @@
-{% extends 'base.html' %}  <!-- Extiende la plantilla base.html para reutilizar la estructura general de la página -->
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
-{% block content %}  <!-- Inicia el bloque de contenido específico de esta plantilla -->
-
-    {% load crispy_forms_tags %}  <!-- Carga las etiquetas de crispy-forms para aplicar un mejor estilo a los formularios -->
-
-    <div class="container mt-3">  <!-- Contenedor con un margen superior de 3 unidades -->
-        <h2>Dental Knights</h2>  <!-- Título principal de la página -->
-
-        <form method="POST" action="{% url 'login' %}">  <!-- Formulario para iniciar sesión (el método es POST para enviar datos al servidor) -->
-            {% csrf_token %}  <!-- Token CSRF para proteger el formulario contra ataques CSRF -->
-
-            <div class="card mx-auto" style="width: 30rem;">  <!-- Tarjeta para mostrar el formulario, centrada y con un ancho de 30 rem -->
-                <div class="card-body">  <!-- Cuerpo de la tarjeta -->
-                    <h4 class="card-title text-center">Bienvenido a Dental Knights
-                    </h4><br>  <!-- Subtítulo de bienvenida centrado -->
-                    <h5 class="card-title text-center">Iniciar Sesión</h5><br>  <!-- Título del formulario, centrado -->
-
-                    {{ form | crispy }}  <!-- Aplica el filtro crispy para mejorar el diseño del formulario (requiere crispy-forms) -->
-                    
-                    <div class="card-body">  <!-- Contenedor dentro de la tarjeta para los enlaces -->
-                        <a class="card-link" href="{% url 'home' %}">Inicio</a>  <!-- Enlace para regresar a la página principal -->
-                        <a class="card-link" href="{% url 'register' %}">Registrarse</a>  <!-- Enlace para redirigir a la página de registro -->
-                        <a class="card-link" href="{% url 'password_reset' %}">Recuperar Contraseña</a>  <!-- Enlace para recuperar la contraseña -->
-                    </div>
-
-                    <button class="btn btn-sm btn-primary float-end" type="submit">Iniciar sesión</button>  <!-- Botón para enviar el formulario y realizar el inicio de sesión, alineado a la derecha -->
+{% block content %}
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center py-5" 
+    style="background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),url('{{ MEDIA_URL }}imagenes/BH_Como-promocionar-tu-clinica-dental-con-acciones-de-siempre-pero-como-nunca.jpg') no-repeat center center fixed;background-size: cover;">
+    <div class="card shadow" style="max-width: 400px;">
+        <div class="card-header bg-primary text-white text-center py-3">
+            <h3 class="mb-0">Dental Knights</h3>
+        </div>
+        <div class="card-body p-4">
+            <h4 class="card-title text-center mb-4">Bienvenido</h4>
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="d-grid gap-2 mt-4">
+                    <button class="btn btn-primary" type="submit">Iniciar sesión</button>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer bg-white text-center py-3">
+            <div class="row">
+                <div class="col-4">
+                    <a href="{% url 'home' %}" class="text-decoration-none">Inicio</a>
+                </div>
+                <div class="col-4">
+                    <a href="{% url 'register' %}" class="text-decoration-none">Registrarse</a>
+                </div>
+                <div class="col-4">
+                    <a href="{% url 'password_reset' %}" class="text-decoration-none">Recuperar Contraseña</a>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
-
-{% endblock %}  <!-- Finaliza el bloque de contenido específico de esta plantilla -->
+</div>
+{% endblock %}
