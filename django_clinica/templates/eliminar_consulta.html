@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="header p-3 pb-md-4 mx-auto text-center">
+        <h1 class="display-4 fw-normal text-body-emphasis">Eliminar Consulta</h1>
+        <p class="fs-5 text-body-secondary">
+            "¿Estás seguro de que deseas eliminar esta consulta?"
+        </p>
+    </div>
+
+    <main>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mb-4 rounded-3 shadow-sm border-light">
+                    <div class="card-header py-3 text-bg-light border-light">
+                        <h4 class="my-0 fw-normal">Detalles de la Consulta</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Nombre Completo:</strong> {{ object.nombre_completo }}</p>
+                        <p><strong>RUT:</strong> {{ object.rut }}</p>
+                        <p><strong>Teléfono:</strong> {{ object.telefono }}</p>
+                        <p><strong>Email:</strong> {{ object.email }}</p>
+                        <p><strong>Fecha:</strong> {{ object.fecha }}</p>
+                        <p><strong>Hora:</strong> {{ object.hora }}</p>
+                        <p><strong>Profesional:</strong> {{ object.profesional.get_full_name }}</p>
+                        <p><strong>Precio:</strong> {{ object.precio }}</p>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                            <a href="{% url 'consultas' %}" class="btn btn-secondary">Cancelar</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

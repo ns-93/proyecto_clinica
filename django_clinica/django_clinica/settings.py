@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Se define la variable BASE_DIR que contiene la ruta base del proyecto.
 # Esto nos permite construir rutas relativas de manera más sencilla.
@@ -27,7 +28,7 @@ SECRET_KEY = 'django-insecure-d+!ke&9(zy#zhtevt-$ryf)*ukx6ufkr!zjoug0e@yx_dv0)l$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['l50nf88k-8000.brs.devtunnels.ms', '127.0.0.1','localhost:8000','localhost']
 
 
 # Application definition
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     'core',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django.contrib.humanize',
 ]
 
 # Configuración de crispy-forms para usar el framework de diseño bootstrap5.
@@ -147,6 +149,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Ruta completa para los archivos multimedia.
 
+# Asegurar que existen los directorios
+USERS_MEDIA_ROOT = os.path.join(MEDIA_ROOT, 'users')
+os.makedirs(USERS_MEDIA_ROOT, exist_ok=True)
+
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -174,3 +181,19 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tu_email@example.com'
 EMAIL_HOST_PASSWORD = 'tu_contraseña'
 
+
+load_dotenv()
+MERCADOPAGO_ACCESS_TOKEN = os.getenv('MERCADOPAGO_ACCESS_TOKEN')
+MERCADOPAGO_PUBLIC_KEY = os.getenv('MERCADOPAGO_PUBLIC_KEY')
+
+if not MERCADOPAGO_ACCESS_TOKEN or not MERCADOPAGO_PUBLIC_KEY:
+    raise ValueError("Credenciales de MercadoPago no configuradas")
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://751c-190-44-81-7.ngrok-free.app',
+    # otros dominios de confianza
+]
+
+# En settings.py
+APPEND_SLASH = True  # Confirmar que está activado

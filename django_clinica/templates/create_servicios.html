@@ -25,7 +25,27 @@
                 <div class="card-body">
                     <h5 class="card-title">Complete todos los campos</h5>  <!-- Instrucción de completar los campos del formulario -->
 
+                    <!-- Campo para seleccionar la especialidad -->
+                    <div class="mb-3"></div>
+                        <label for="especialidad" class="form-label">Especialidad</label>
+                        <select id="especialidad" name="especialidad" class="form-select">
+                            {% for especialidad in especialidades %}
+                                <option value="{{ especialidad.id }}">{{ especialidad.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
                     {{ form | crispy }}  <!-- Renderiza el formulario con el estilo de crispy_forms, que aplica estilos automáticamente -->
+
+                    <!-- Campo para seleccionar el cliente -->
+                    <div class="mb-3">
+                        <label for="cliente" class="form-label">Cliente</label>
+                        <select id="cliente" name="cliente" class="form-select">
+                            {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}">{{ cliente.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
                     <!-- Enlaces de navegación -->
                     <a class="card-link" href="{% url 'home' %}">Inicio</a>  <!-- Enlace a la página principal -->

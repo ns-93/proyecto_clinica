@@ -1,6 +1,15 @@
 <div class="container mt-3">
-    <div class="mb-1">
-        <a href="{% url 'reservas_profesionales' %}" class="btn btn-primary">Ver Reservas</a>
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <a href="{% url 'reservas_profesionales' %}" class="btn btn-primary btn-lg w-100">
+                <i class="bi bi-calendar-check me-2"></i>Ver Reservas
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{% url 'servicios_create' %}" class="btn btn-success btn-lg w-100">
+                <i class="bi bi-plus-circle me-2"></i>Agregar Servicio
+            </a>
+        </div>
     </div>
     <!-- Aquí puedes agregar más contenido relacionado con los profesionales -->
 </div>
@@ -65,7 +74,7 @@
 <!-- Servicios finalizados -->
 <div class="card text-bg-danger shadow mb-3">
     <div class="card-header">SERVICIOS FINALIZADOS</div>
-    <div class="card-body">
+    <div class=" card-body">
         {% if finalized_services %}  <!-- Verifica si existen servicios finalizados -->
             <ul class="list-group">
                 {% for service in finalized_services %}

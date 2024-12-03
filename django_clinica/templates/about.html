@@ -1,38 +1,128 @@
 {% extends 'base.html' %}
 
+{% block title %}Nosotros - Dental Knights{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-image: url('/media/imagenes/decoracion-clinica-dental-medicalta.jpg');
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+    }
+    .about-container {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+    .about-section {
+        background-color: rgba(248, 249, 250, 0.8);
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    .about-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .about-section h2 {
+        color: #0056b3;
+        border-bottom: 2px solid #0056b3;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .contact-info {
+        background-color: rgba(233, 236, 239, 0.8);
+        border-left: 4px solid #0056b3;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    .about-image {
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    .about-image:hover {
+        transform: scale(1.02);
+    }
+    .section-title {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+    .section-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -10px;
+        width: 50px;
+        height: 3px;
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container my-5">
-    <h1 class="display-4 fw-normal text-body-emphasis text-center">Acerca de Dental Knights</h1>
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            {% if about %}
-                <h2>Misión</h2>
-                <p>{{ about.mission }}</p>
-                <h2>Visión</h2>
-                <p>{{ about.vision }}</p>
-                <h2>Valores</h2>
-                <p>{{ about.values }}</p>
-                <h2>Información de Contacto</h2>
-                <p>{{ about.contact_info }}</p>
-                <p><strong>Email:</strong> {{ about.email }}</p>
-                <p><strong>Dirección:</strong> {{ about.address }}</p>
-                <p><strong>Teléfono:</strong> {{ about.phone }}</p>
-                <h2>Imágenes</h2>
+<div class="container about-container">
+    <h1 class="display-4 fw-bold text-center mb-5 section-title">Nosotros - Dental Knights</h1>
+    
+    {% if about %}
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="about-section">
+                    <h2 class="h3">Nuestra Misión</h2>
+                    <p class="lead">{{ about.mission }}</p>
+                </div>
+                
+                <div class="about-section">
+                    <h2 class="h3">Nuestra Visión</h2>
+                    <p class="lead">{{ about.vision }}</p>
+                </div>
+                
+                <div class="about-section">
+                    <h2 class="h3">Nuestros Valores</h2>
+                    <p class="lead">{{ about.values }}</p>
+                </div>
+                
+                <div class="about-section">
+                    <h2 class="h3">Información de Contacto</h2>
+                    <p>{{ about.contact_info }}</p>
+                    <div class="contact-info">
+                        <p><i class="bi bi-envelope-fill me-2"></i><strong>Email:</strong> {{ about.email }}</p>
+                        <p><i class="bi bi-geo-alt-fill me-2"></i><strong>Dirección:</strong> {{ about.address }}</p>
+                        <p><i class="bi bi-telephone-fill me-2"></i><strong>Teléfono:</strong> {{ about.phone }}</p>
+                    </div>
+                </div>
+                
                 {% if about.images %}
-                    <img src="{{ about.images.url }}" class="img-fluid" alt="Imágenes de Dental Knights">
-                {% else %}
-                    <p>No hay imágenes disponibles.</p>
+                    <div class="about-section">
+                        <h2 class="h3">Nuestra Clínica</h2>
+                        <img src="{{ about.images.url }}" class="img-fluid about-image" alt="Imágenes de Dental Knights">
+                    </div>
                 {% endif %}
+                
                 {% if user.is_authenticated and group_name == 'ejecutivos' %}
-                    <a href="{% url 'edit_about' about.id %}" class="btn btn-primary mt-3">Editar</a>
+                    <div class="text-center mt-4">
+                        <a href="{% url 'edit_about' about.id %}" class="btn btn-primary btn-lg">Editar Información</a>
+                    </div>
                 {% endif %}
-            {% else %}
-                <p>No hay información disponible sobre Dental Knights.</p>
-                {% if user.is_authenticated and group_name == 'ejecutivos' %}
-                    <a href="{% url 'add_about' %}" class="btn btn-secondary mt-3">Agregar</a>
-                {% endif %}
-            {% endif %}
+            </div>
         </div>
-    </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            <p class="mb-0">No hay información disponible sobre Dental Knights en este momento.</p>
+        </div>
+        {% if user.is_authenticated and group_name == 'ejecutivos' %}
+            <div class="text-center mt-4">
+                <a href="{% url 'add_about' %}" class="btn btn-secondary btn-lg">Agregar Información</a>
+            </div>
+        {% endif %}
+    {% endif %}
 </div>
 {% endblock %}
+

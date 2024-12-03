@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Lista de Especialidades{% endblock %}
+
+{% block content %}
+<!-- Contenedor con imagen de fondo -->
+<div class="container-fluid py-5" style="
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url('{{ MEDIA_URL }}imagenes/tipos-cliente-marketing-clinica-dental-1.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;">
+    
+    <div class="container">
+        <h1 class="mb-5 text-center text-white">Nuestras Especialidades</h1>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for especialidad in especialidades %}
+                <div class="col">
+                    <div class="card h-100 shadow-lg hover-card">
+                        {% if especialidad.imagen %}
+                            <div class="card-img-top-wrapper">
+                                <img src="{{ especialidad.imagen.url }}" class="card-img-top" alt="{{ especialidad.nombre }}">
+                            </div>
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold mb-3">{{ especialidad.nombre }}</h5>
+                            <p class="card-text flex-grow-1">{{ especialidad.descripcion }}</p>
+                            <div class="mt-3 text-end">
+                                <span class="badge bg-primary rounded-pill px-3 py-2">{{ especialidad.valor_aproximado }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-light text-center" role="alert">
+                        No hay especialidades disponibles en este momento.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+    .card-img-top-wrapper {
+        height: 200px;
+        overflow: hidden;
+    }
+    .card-img-top {
+        object-fit: cover;
+        height: 100%;
+        width: 100%;
+        transition: transform 0.3s ease-in-out;
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .card-title {
+        color: #333;
+        font-size: 1.25rem;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.5rem;
+    }
+    .card-text {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    .hover-card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2) !important;
+    }
+    .hover-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    .badge {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+</style>
+{% endblock %}
+

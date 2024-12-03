@@ -1,51 +1,143 @@
-
 {% load static %}
 
 <!doctype html>
-<html lang="es"> 
-
+<html lang="es">
 <head>
-    <meta charset="utf-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1">  <!-- Hace que la página sea responsive y se ajuste correctamente en dispositivos móviles -->
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">  <!-- Carga el archivo CSS de Bootstrap desde una CDN para aplicar el estilo de Bootstrap -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Dental Knights{% endblock %}</title>
     
-    <link rel="icon" type="image/jpeg" href="/media/dienteicon.jpg"><!-- Aquí se podría definir el icono de la página (favicon), pero está vacío -->
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/picnic.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/odonto.css' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     
-    <title>Dental Knights - Protegemos tu sonrisa</title>  <!-- Título de la página que aparecerá en la pestaña del navegador -->
+    <link rel="icon" type="image/jpeg" href="{% static 'img/dienteicon.jpg' %}">
+    
+    {% block extra_css %}{% endblock %}
 </head>
-
 <body>
-    {% include 'header.html' %}  <!-- Incluye el archivo 'header.html', que es probable que contenga el encabezado común para todas las páginas -->
-
-    <div class="content">
-        {% block content %}{% endblock %}
-    </div>  <!-- Define un bloque de contenido que será reemplazado por contenido específico en cada página que extienda esta plantilla -->
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  <!-- Carga el archivo JavaScript de Bootstrap desde una CDN para habilitar las interacciones dinámicas (como modales, menús desplegables, etc.) -->
-
-    <div class="container-fluid footer-full-width {% if user.is_authenticated %}footer-dark{% else %}footer-light{% endif %} footer">
-        <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-1 border-top">
-            <div class="col-md-4 d-flex align-items-center">
-                <a href="/" class="mb-3 me-2 mb-md-0 text-decoration-none lh-1">
-                    <svg class="bi" width="30" height="24"><use xlink:href="#bootstrap"/></svg>
-                </a>
-                <span>&copy; 2024 Company, Inc</span>
+    <!-- Navbar -->
+    {% if user.is_authenticated %}
+        {% if group_name == 'clientes' %}
+            <header class="navbar navbar-expand-lg navbar-dark bg-primary p-3">
+        {% elif group_name == 'profesionales' %}
+            <header class="navbar navbar-expand-lg navbar-dark bg-success p-3">
+        {% elif group_name == 'ejecutivos' %}
+            <header class="navbar navbar-expand-lg navbar-dark bg-danger p-3">
+        {% elif group_name == 'administradores' %}
+            <header class="navbar navbar-expand-lg navbar-dark bg-info p-3">
+        {% else %}
+            <header class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+        {% endif %}
+    {% else %}
+        <header class="navbar navbar-expand-lg navbar-dark bg-black p-3">
+    {% endif %}
+        <div class="container">
+            <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center">
+                <!-- Modificar la línea en base.html -->
+                <img src="{{ MEDIA_URL }}dienteicon.jpg" alt="Dental Knights Logo" height="40">
+                <span>Dental Knights</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a href="{% url 'home' %}" class="nav-link px-2 text-white">Inicio</a></li>
+                    {% if group_name == 'administradores' or group_name == 'ejecutivos' or group_name == 'profesionales' %}
+                        <li class="nav-item"><a href="{% url 'servicios' %}" class="nav-link px-2 text-white">Servicios</a></li>
+                    {% endif %}
+                    <li class="nav-item"><a href="{% url 'lista_especialidades' %}" class="nav-link px-2 text-white">Especialidades</a></li>
+                    <li class="nav-item"><a href="{% url 'consultas' %}" class="nav-link px-2 text-white">Agendar Cita</a></li>
+                    {% if not user.is_authenticated or group_name == 'clientes' or group_name == 'ejecutivos' %}
+                        <li class="nav-item"><a href="{% url 'pricing' %}" class="nav-link px-2 text-white">Precios</a></li>
+                        <li class="nav-item"><a href="{% url 'faq' %}" class="nav-link px-2 text-white">Consulta con Nosotros</a></li>
+                        <li class="nav-item"><a href="{% url 'about' %}" class="nav-link px-2 text-white">Nosotros</a></li>
+                    {% endif %}
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link px-2 text-white me-3" href="{% url 'profile' %}">
+                            {{ group_name_singular|capfirst }} | {{ user.username }}
+                        </a>
+                        <form action="{% url 'logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Cerrar Sesión</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'custom_login' %}" class="btn btn-outline-light me-2">Iniciar Sesión</a>
+                        <a href="{% url 'register' %}" class="btn btn-warning">Registrarse</a>
+                    {% endif %}
+                </div>
             </div>
-        
-            <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
-                <li class="ms-3"><a href="#"><svg class="bi" width="24" height="24"><use xlink:href="#twitter"/></svg></a></li>
-                <li class="ms-3"><a href="#"><svg class="bi" width="24" height="24"><use xlink:href="#instagram"/></svg></a></li>
-                <li class="ms-3"><a href="#"><svg class="bi" width="24" height="24"><use xlink:href="#facebook"/></svg></a></li>
-            </ul>
-        </footer>
-    </div>
+        </div>
+    </header>
 
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% if especialidades %}
+            <div class="container mt-5">
+                <div class="row">
+                    {% for especialidad in especialidades %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="{{ especialidad.imagen.url }}" class="card-img-top" alt="{{ especialidad.nombre }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ especialidad.nombre }}</h5>
+                                    <p class="card-text">{{ especialidad.descripcion }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        {% endblock %}
+    </main>
 
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Dental Knights</h5>
+                    <p>Cuidando tu sonrisa desde 2005</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contacto</h5>
+                    <p>
+                        <i class="bi bi-geo-alt-fill"></i> Calle Principal 123, Ciudad<br>
+                        <i class="bi bi-telephone-fill"></i> +34 123 456 789<br>
+                        <i class="bi bi-envelope-fill"></i> info@dentalknights.com
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Síguenos</h5>
+                    <a href="#" class="text-decoration-none me-2"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-decoration-none me-2"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-decoration-none"><i class="bi bi-twitter"></i></a>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p>&copy; 2023 Dental Knights. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
-
 </html>
+

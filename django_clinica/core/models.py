@@ -1,8 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import  post_save, post_delete
-from django.dispatch import  receiver
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 from django.utils.timezone import now
+from django.core.validators import MinLengthValidator, MinValueValidator, FileExtensionValidator
+from django.core.exceptions import ValidationError
+
+# Define la clase Especialidad antes de cualquier importación que la utilice
+class Especialidad(models.Model):
+    nombre = models.CharField(max_length=100, validators=[MinLengthValidator(3, 'El nombre debe tener al menos 3 caracteres')])
+    descripcion = models.TextField(blank=True, validators=[MinLengthValidator(10, 'La descripción debe tener al menos 10 caracteres')])
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = 'especialidad'
+        verbose_name_plural = 'especialidades'
+
 # Create your models here.
 
 #servicios aka definiremos el servicio que ofreceremos o alguna otra acitividad que se requiera
@@ -11,21 +26,88 @@ from django.utils.timezone import now
 # Modelo para gestionar servicios y su estado
 
 class Servicios(models.Model):
-    # Opciones de estado del servicio
-    STATUS_CHOICES = (
-        ('S', 'Solicitud de Servicio'),  # Servicio solicitado por el cliente
-        ('P', 'En progreso'),            # Servicio en proceso de realización
-        ('F', 'Finalizado'),             # Servicio completado
+    STATUS_CHOICES = [
+        ('S', 'Solicitado'),
+        ('P', 'Progresso'),
+        ('F', 'Finalizado')
+    ]
+
+    name = models.CharField(
+        max_length=100, 
+        verbose_name='Nombre',
+        validators=[
+            MinLengthValidator(3, 'El nombre debe tener al menos 3 caracteres')
+        ]
     )
 
-    name = models.CharField(max_length=100, verbose_name='Nombre del Servicio')  # Nombre del servicio
-    description = models.TextField(blank=True, null=True, verbose_name='Descripción')  # Descripción opcional del servicio
-    profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional')  # Profesional asignado, relacionado con un usuario del grupo "profesionales"
-    n_procedimientos = models.PositiveIntegerField(default=0, verbose_name='Número de sesiones')  # Número de procedimientos o sesiones asociadas al servicio
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='S', verbose_name='Estado')  # Estado del servicio, utilizando las opciones definidas en STATUS_CHOICES
+    description = models.TextField(
+        verbose_name='Descripción',
+        blank=True,
+        validators=[
+            MinLengthValidator(10, 'La descripción debe tener al menos 10 caracteres')
+        ]
+    )
+
+    profesional = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        limit_choices_to={'groups__name': 'profesionales'},
+        verbose_name='Profesional',
+        related_name='servicios_profesional'
+    )
+
+    cliente = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        limit_choices_to={'groups__name': 'clientes'},
+        verbose_name='Cliente',
+        null=True,
+        blank=True,
+        related_name='servicios_cliente'
+    )
+
+    n_procedimientos = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Número de sesiones',
+        validators=[
+            MinValueValidator(1, 'Debe haber al menos 1 procedimiento')
+        ]
+    )
+
+    status = models.CharField(
+        max_length=1,
+        choices=STATUS_CHOICES,
+        default='S',
+        verbose_name='Estado'
+    )
+
+    especialidad = models.ForeignKey(Especialidad, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Especialidad')
+
+    def clean(self):
+        # Validar que el profesional pertenece al grupo correcto
+        if not self.profesional.groups.filter(name='profesionales').exists():
+            raise ValidationError({
+                'profesional': 'El usuario seleccionado no es un profesional'
+            })
+
+        # Validar que el cliente pertenece al grupo correcto
+        if self.cliente and not self.cliente.groups.filter(name='clientes').exists():
+            raise ValidationError({
+                'cliente': 'El usuario seleccionado no es un cliente'
+            })
+
+        # Validar estado según condiciones
+        if self.status == 'C' and not self.cliente:
+            raise ValidationError({
+                'status': 'No se puede marcar como completado sin un cliente asignado'
+            })
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name  # Representación del servicio como su nombre
+        return self.name
 
     class Meta:
         verbose_name = 'servicio'
@@ -37,37 +119,87 @@ class Servicios(models.Model):
 #solicitud de servicios aqui permitiremos que el cliente haga solicitud de algun servicio que creamos antes
 
 #solicitud de servicio o registro de servicio
-# Modelo para registrar solicitudes de servicios por parte de los clientes
+
 class RegistroServicio(models.Model):
-    # Relación con el modelo Servicios, indica el servicio que se solicita
-    servicio = models.ForeignKey(Servicios, on_delete=models.CASCADE, verbose_name='Servicio')
+    servicio = models.ForeignKey(
+        Servicios, 
+        on_delete=models.CASCADE, 
+        verbose_name='Servicio'
+    )
     
-    # Relación con el modelo User, limitado al grupo "clientes", indica qué cliente solicita el servicio
     cliente = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,  # Si el cliente se elimina, también se elimina la solicitud
-        related_name='cliente_registrado',  # Relaciona la solicitud con el cliente
-        limit_choices_to={'groups__name': 'clientes'},  # Limita los clientes a aquellos que están en el grupo "clientes"
+        on_delete=models.CASCADE,
+        related_name='cliente_registrado',
+        limit_choices_to={'groups__name': 'clientes'},
         verbose_name='cliente'
     )
     
-    # Campo booleano que indica si la solicitud de servicio está habilitada o no
-    enabled = models.BooleanField(default=True, verbose_name='Habilitado')
+    enabled = models.BooleanField(
+        default=True, 
+        verbose_name='Habilitado'
+    )
     
-    # Nuevo campo de observación para que el cliente o profesional pueda agregar notas adicionales a la solicitud
-    observacion = models.TextField(null=True, blank=True, verbose_name='Observación')
-    archivo = models.FileField(upload_to='archivos/', null=True, blank=True)
-    odontograma = models.ImageField(upload_to='odontogramas/', null=True, blank=True)
+    observacion = models.TextField(
+        null=True, 
+        blank=True, 
+        verbose_name='Observación',
+        validators=[
+            MinLengthValidator(10, 'La observación debe tener al menos 10 caracteres')
+        ]
+    )
+    
+    archivo = models.FileField(
+        upload_to='archivos/', 
+        null=True, 
+        blank=True,
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+                message='Formato de archivo no soportado'
+            )
+        ]
+    )
+    
+    odontograma = models.ImageField(
+        upload_to='odontogramas/', 
+        null=True, 
+        blank=True,
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['jpg', 'jpeg', 'png'],
+                message='Solo se permiten imágenes JPG o PNG'
+            )
+        ]
+    )
 
-    # Método para representar la solicitud en formato de texto, mostrando el nombre de usuario del cliente y el servicio
+    def clean(self):
+        # Validar que el cliente pertenece al grupo correcto
+        if not self.cliente.groups.filter(name='clientes').exists():
+            raise ValidationError({
+                'cliente': 'El usuario debe pertenecer al grupo de clientes'
+            })
+
+        # Validar tamaño de archivos
+        if self.archivo and self.archivo.size > 5*1024*1024:  # 5MB
+            raise ValidationError({
+                'archivo': 'El archivo no debe superar los 5MB'
+            })
+
+        if self.odontograma and self.odontograma.size > 2*1024*1024:  # 2MB
+            raise ValidationError({
+                'odontograma': 'La imagen no debe superar los 2MB'
+            })
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f'{self.cliente.username} - {self.servicio}'
 
-    # Configuración adicional para el modelo en el administrador de Django
     class Meta:
-        # Nombre en singular para el modelo
         verbose_name = 'solicitud de servicio'
-        # Nombre plural para el modelo
         verbose_name_plural = 'solicitudes de servicios'
 
 #hasta aqui el registro o solicitudes de servicio        
@@ -210,6 +342,11 @@ class Mouth(models.Model):
 
 #hasa aqui llega el modelo de odontograma
 
+class HorarioDisponible(models.Model):
+    dia = models.DateField()
+    hora = models.TimeField()
+    disponible = models.BooleanField(default=True)
+
 class Reserva(models.Model):
     profesional = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'profesionales'}, verbose_name='Profesional', related_name='reservas_profesional')
     cliente = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'groups__name': 'clientes'}, verbose_name='Cliente', null=True, blank=True, related_name='reservas_cliente')
@@ -253,3 +390,80 @@ class About(models.Model):
     class Meta:
         verbose_name = 'Acerca de'
         verbose_name_plural = 'Acerca de'
+
+
+
+#modelo consultas
+class Consulta(models.Model):
+    ESTADO_CHOICES = [
+        ('disponible', 'Disponible'),
+        ('vendida', 'Vendida'),
+        ('cancelada', 'Cancelada')
+    ]
+    
+    ESTADO_PAGO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('completado', 'Completado'),
+        ('fallido', 'Fallido')
+    ]
+
+    # Campos existentes
+    nombre_completo = models.CharField(max_length=255)
+    rut = models.CharField(max_length=12)
+    telefono = models.CharField(max_length=12)
+    email = models.EmailField()
+    fecha = models.DateField(default=now)
+    hora = models.TimeField(default=now)
+    profesional = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        limit_choices_to={'groups__name': 'profesionales'}, 
+        verbose_name='Profesional'
+    )
+    precio = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        verbose_name='Precio',
+        validators=[
+            MinValueValidator(0, 'El precio no puede ser negativo')
+        ]
+    )
+    
+    # Campos de pago y estado
+    pagada = models.BooleanField(default=False)
+    preference_id = models.CharField(max_length=255, null=True, blank=True)
+    payment_id = models.CharField(max_length=255, null=True, blank=True)
+    estado_pago = models.CharField(
+        max_length=20, 
+        choices=ESTADO_PAGO_CHOICES,
+        default='pendiente'
+    )
+    
+    # Nuevos campos
+    estado = models.CharField(
+        max_length=20, 
+        choices=ESTADO_CHOICES,
+        default='disponible'
+    )
+    comprador = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL,
+        null=True, 
+        blank=True,
+        related_name='consultas_compradas'
+    )
+    fecha_compra = models.DateTimeField(null=True, blank=True)
+    
+    def marcar_como_vendida(self, user):
+        self.estado = 'vendida'
+        self.comprador = user
+        self.fecha_compra = timezone.now()
+        self.save()
+    
+    def __str__(self):
+        return f"Consulta {self.id} - {self.nombre_completo} - {self.fecha}"
+    
+    class Meta:
+        ordering = ['-fecha', '-hora']
+        verbose_name = 'Consulta'
+        verbose_name_plural = 'Consultas'

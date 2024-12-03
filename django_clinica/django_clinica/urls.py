@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from core import views  # Asegúrate de importar las vistas
 
 # Definición de las rutas de URL del proyecto.
 urlpatterns = [
@@ -33,7 +34,8 @@ urlpatterns = [
     # Esto incluye las URLs estándar de Django para manejo de usuarios.
     path('accounts/', include('django.contrib.auth.urls')),
     
-    
+    # Ruta para la vista 'lista_especialidades'.
+    path('lista_especialidades/', views.lista_especialidades, name='lista_especialidades'),
 ]
 
 # Solo se ejecutará si el modo DEBUG está habilitado.
@@ -41,5 +43,5 @@ urlpatterns = [
 if settings.DEBUG:
     # Importamos la función para manejar archivos estáticos en el entorno de desarrollo.
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    # Añadimos una ruta para servir archivos multimedia, 
+    # A��adimos una ruta para servir archivos multimedia, 
     # basada en la configuración MEDIA_URL y MEDIA_ROOT en el archivo settings.py.

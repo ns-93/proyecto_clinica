@@ -2,108 +2,409 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordResetForm
 from accounts.models import Profile
-from .models import Servicios, Mouth, Reserva, About
+from .models import Servicios, Mouth, Reserva, About, Consulta, Especialidad
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Submit
 from django.utils import timezone
+from django import forms
+from django.core.validators import MinLengthValidator, MinValueValidator, RegexValidator
+import re
 
 
 # Formulario de inicio de sesión heredado de AuthenticationForm de Django
-"""class LoginForm(AuthenticationForm):
-    pass"""
-
-# Formularios personalizados para la aplicación de cuentas
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(label='Nombre de usuario o Correo electrónico', max_length=254)
-    password = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
+    username = forms.CharField(
+        label='Nombre de usuario o Correo electrónico',
+        max_length=254,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'usuario@ejemplo.com'
+        })
+    )
+    password = forms.CharField(
+        label='Contraseña',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ingrese su contraseña'
+        })
+    )
 
 # Formulario de registro de usuario
+
 class RegisterForm(UserCreationForm):
-    email = forms.EmailField(label='Correo electrónico')
-    first_name = forms.CharField(label='Nombre')
-    last_name = forms.CharField(label='Apellido')
-    rut = forms.CharField(max_length=12, required=True)
+    email = forms.EmailField(
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        error_messages={
+            'invalid': 'Ingrese un correo electrónico válido',
+            'required': 'El correo electrónico es requerido'
+        }
+    )
+    
+    first_name = forms.CharField(
+        label='Nombre',
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$',
+                message='El nombre solo debe contener letras'
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    last_name = forms.CharField(
+        label='Apellido',
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$',
+                message='El apellido solo debe contener letras'
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    rut = forms.CharField(
+        max_length=12,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]{1}$',
+                message='Formato de RUT inválido (Ej: 12.345.678-9)'
+            )
+        ],
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '12.345.678-9'
+        })
+    )
 
-# Configuración de metadatos para el formulario
     class Meta:
-        # Especifica que este formulario se basa en el modelo User de Django
-        # Define los campos que se mostrarán en el formulario de registro
         model = User
-        fields = ['username','rut', 'email', 'first_name', 'last_name', 'password1', 'password2']
+        fields = ['username', 'rut', 'email', 'first_name', 'last_name', 'password1', 'password2']
 
-# Método de validación para el campo de correo electrónico
     def clean_email(self):
-        email_field = self.cleaned_data['email']
-        # Verifica si el correo electrónico ya está registrado
-        if User.objects.filter(email=email_field).exists():
+        email = self.cleaned_data['email']
+        if User.objects.filter(email=email).exists():
             raise forms.ValidationError('Este correo electrónico ya está registrado')
-        return email_field    # Retorna el correo si no está registrado
-
-# Formulario de actualización de usuario
-class UserForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'email']  # Eliminar 'rut' del formulario
-
-# Formulario de perfil de usuario
-class ProfileForm(forms.ModelForm):
-    class Meta:
-        # Utiliza el modelo Profile (perfil de usuario personalizado)
-        # Define los campos de perfil que se pueden actualizar
-        model = Profile
-        fields = ['image', 'address', 'location', 'telephone', 'rut']  # Añadir 'rut' al formulario
+        return email
 
     def clean_rut(self):
         rut = self.cleaned_data.get('rut')
-        if Profile.objects.filter(rut=rut).exists():
-            raise forms.ValidationError('Este RUT ya está registrado. Si cree que es un error, contacte a la administración.')
+        if not self.validar_rut(rut):
+            raise forms.ValidationError('RUT inválido')
+        if User.objects.filter(profile__rut=rut).exists():
+            raise forms.ValidationError('Este RUT ya está registrado')
         return rut
+
+    def validar_rut(rut):
+        """
+        Ejemplos de RUT válidos:
+        - 11.111.111-1
+        - 22.222.222-2 
+        - 33.333.333-3
+        - 44.444.444-4
+        - 55.555.555-5
+        """
+        try:
+            rut = rut.replace(".", "").replace("-", "")
+            if not re.match(r'^\d{7,8}[0-9Kk]{1}$', rut):
+                return False
+            
+            # Algoritmo de validación
+            valor = rut[:-1]
+            dv = rut[-1].upper()
+            suma = 0
+            multiplo = 2
+            
+            for i in reversed(valor):
+                suma += int(i) * multiplo
+                multiplo = 2 if multiplo == 7 else multiplo + 1
+            
+            resultado = 11 - (suma % 11)
+            dv_esperado = {10: 'K', 11: '0'}.get(resultado, str(resultado))
+            
+            return dv == dv_esperado
+            
+        except (TypeError, ValueError):
+            return False
+
+
+# Formulario de actualización de usuario
+class UserForm(forms.ModelForm):
+    first_name = forms.CharField(
+        label='Nombre',
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$',
+                message='El nombre solo debe contener letras'
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    last_name = forms.CharField(
+        label='Apellido',
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$',
+                message='El apellido solo debe contener letras'
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    email = forms.EmailField(
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        error_messages={
+            'invalid': 'Por favor ingrese un email válido'
+        }
+    )
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
+# Formulario de perfil de usuario
+class ProfileForm(forms.ModelForm):
+    rut = forms.CharField(
+        label='RUT',
+        max_length=12,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]{1}$',
+                message='Formato de RUT inválido (Ej: 12.345.678-9)'
+            )
+        ],
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '12.345.678-9'
+        })
+    )
+
+    telephone = forms.CharField(
+        label='Teléfono',
+        validators=[
+            RegexValidator(
+                regex=r'^\+?569\d{8}$',
+                message='Ingrese un número válido (+56912345678)'
+            )
+        ],
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '+56912345678'
+        })
+    )
+
+    address = forms.CharField(
+        label='Dirección',
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    location = forms.CharField(
+        label='Ciudad',
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    image = forms.ImageField(
+        label='Imagen de perfil',
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = Profile
+        fields = ['image', 'address', 'location', 'telephone', 'rut']
+
+    def clean_rut(self):
+        rut = self.cleaned_data.get('rut')
+        if not self.validar_rut(rut):
+            raise forms.ValidationError('RUT inválido')
+        
+        # Verificar si el RUT ya existe, excluyendo el usuario actual
+        if self.instance and self.instance.pk:
+            exists = Profile.objects.exclude(pk=self.instance.pk).filter(rut=rut).exists()
+        else:
+            exists = Profile.objects.filter(rut=rut).exists()
+            
+        if exists:
+            raise forms.ValidationError('Este RUT ya está registrado')
+        return rut
+
+    def validar_rut(self, rut):
+        try:
+            rut = rut.replace(".", "").replace("-", "")
+            if not re.match(r'^\d{7,8}[0-9Kk]{1}$', rut):
+                return False
+            
+            valor = rut[:-1]
+            dv = rut[-1].upper()
+            suma = 0
+            multiplo = 2
+            
+            for i in reversed(valor):
+                suma += int(i) * multiplo
+                multiplo = 2 if multiplo == 7 else multiplo + 1
+            
+            resultado = 11 - (suma % 11)
+            dv_esperado = {10: 'K', 11: '0'}.get(resultado, str(resultado))
+            
+            return dv == dv_esperado
+            
+        except (TypeError, ValueError):
+            return False
 
 
 # Formulario de servicios
 class ServiciosForm(forms.ModelForm):
-    # Campo de selección para elegir un profesional del grupo 'profesionales'
-    profesional = forms.ModelChoiceField(queryset=User.objects.filter(groups__name='profesionales'), label='Profesional')
-    # Campo de selección para el estado del servicio
-    status = forms.ChoiceField(choices=Servicios.STATUS_CHOICES, initial='S', label='Estado')
-    # Campo de texto para la descripción del servicio con un widget personalizado
-    description = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), label='Descripción')
-    
-    # Configuración de metadatos para el formulario
-    # Utiliza el modelo Servicios
-    # Define los campos del formulario para crear o actualizar un servicio
+    # Eliminar el campo de nombre
+    description = forms.CharField(
+        label='Descripción',
+        validators=[MinLengthValidator(10, 'La descripción debe tener al menos 10 caracteres')],
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describa el servicio'})
+    )
+
+    n_procedimientos = forms.IntegerField(
+        label='Número de Procedimientos',
+        validators=[MinValueValidator(1, 'Debe haber al menos 1 procedimiento')],
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1'})
+    )
+
+    status = forms.ChoiceField(
+        choices=Servicios.STATUS_CHOICES,
+        initial='S',
+        label='Estado',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Servicios
-        fields = ['name', 'description', 'profesional', 'n_procedimientos', 'status']
+        fields = ['description', 'profesional', 'n_procedimientos', 'status']
 
-# Configuración de diseño del formulario usando FormHelper (de django-crispy-forms)
-    helper = FormHelper()
-    helper.layout = Layout(
-        Field('name'),
-        Field('description'),
-        Field('profesional'),
-        Field('n_procedimientos'),
-        Field('status'),
-        Submit('submit', 'Submit') # Botón de envío para el formulario
-    )     
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user and user.groups.filter(name='profesionales').exists():
+            self.fields['profesional'].queryset = User.objects.filter(id=user.id)
+            self.fields['profesional'].initial = user
+        elif user and (user.groups.filter(name='administradores').exists() or user.groups.filter(name='ejecutivos').exists()):
+            self.fields['profesional'].required = True
 
+        self.helper = FormHelper()
+        self.helper.form_id = 'servicios-form'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.layout = Layout(
+            Field('description'),
+            Field('profesional'),
+            Field('n_procedimientos'),
+            Field('status'),
+            Submit('submit', 'Guardar', css_class='btn btn-primary mt-3')
+        )
+
+    def clean_description(self):
+        description = self.cleaned_data.get('description')
+        if len(description.strip()) < 10:
+            raise forms.ValidationError('La descripción es demasiado corta')
+        return description.strip()
 
 # FORMULARIO DE NUEVO USUARIO
 class UserCreationForm(forms.ModelForm):
+    username = forms.CharField(
+        label='Nombre de usuario',
+        min_length=4,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-Z0-9_]+$',
+                message='El nombre de usuario solo puede contener letras, números y guiones bajos'
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    first_name = forms.CharField(
+        label='Nombre',
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$',
+                message='El nombre solo debe contener letras'
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    last_name = forms.CharField(
+        label='Apellido',
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$',
+                message='El apellido solo debe contener letras'
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    email = forms.EmailField(
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        error_messages={
+            'invalid': 'Por favor ingrese un email válido'
+        }
+    )
+
+    password1 = forms.CharField(
+        label='Contraseña',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        min_length=8,
+        help_text='La contraseña debe tener al menos 8 caracteres'
+    )
+
+    password2 = forms.CharField(
+        label='Confirmar contraseña',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
 
-    # Configuración de diseño del formulario usando FormHelper (de django-crispy-forms)
-    helper = FormHelper()
-    helper.layout = Layout(
-        Field('username'),
-        Field('first_name'),
-        Field('last_name'),
-        Field('email'),
-        Submit('submit', 'Crear Usuario')  # Botón de envío para el formulario
-    )
-    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_id = 'user-creation-form'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-lg-2'
+        self.helper.field_class = 'col-lg-8'
+        self.helper.layout = Layout(
+            Field('username'),
+            Field('first_name'),
+            Field('last_name'),
+            Field('email'),
+            Field('password1'),
+            Field('password2'),
+            Submit('submit', 'Crear Usuario', css_class='btn btn-primary mt-3')
+        )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Este correo electrónico ya está registrado')
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('Este nombre de usuario ya existe')
+        return username
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError('Las contraseñas no coinciden')
+        return password2
 
 
 #formulario de odontograma
@@ -480,7 +781,7 @@ class T43Form(forms.ModelForm):
         fields = ['t_43', ]
 
 
-class T44Form(forms.ModelForm):
+class T44Form(forms.ModelForm):  # Corregir aquí
     t_44 = forms.MultipleChoiceField(
         choices=MOUTH_CHOICES,
         required=False,
@@ -839,3 +1140,163 @@ class CustomPasswordResetForm(PasswordResetForm):
         if not User.objects.filter(email=email).exists():
             raise forms.ValidationError('No existe una cuenta con este correo electrónico.')
         return email
+
+
+class ConsultaForm(forms.ModelForm):
+    class Meta:
+        model = Consulta
+        fields = ['profesional', 'fecha', 'hora', 'precio']
+        widgets = {
+            'profesional': forms.Select(
+                attrs={'class': 'form-control'}
+            ),
+            'fecha': forms.DateInput(
+                attrs={
+                    'class': 'form-control',
+                    'type': 'date'
+                }
+            ),
+            'hora': forms.TimeInput(
+                attrs={
+                    'class': 'form-control',
+                    'type': 'time'
+                }
+            ),
+            'precio': forms.NumberInput(
+                attrs={
+                    'class': 'form-control',
+                    'min': '0',
+                    'step': '1000',
+                    'placeholder': 'Ingrese el precio'
+                }
+            )
+        }
+
+    def clean_precio(self):
+        precio = self.cleaned_data.get('precio')
+        if precio is not None and precio < 0:
+            raise forms.ValidationError('El precio no puede ser negativo')
+        return precio
+
+
+class ReservaConsultaForm(forms.ModelForm):  # Corregir aquí
+    class Meta:
+        model = Consulta
+        fields = ['profesional', 'fecha', 'hora', 'precio']
+        widgets = {
+            'profesional': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'fecha': forms.DateInput(attrs={'type': 'date', 'readonly': 'readonly'}),
+            'hora': forms.TimeInput(attrs={'type': 'time', 'readonly': 'readonly'}),
+            'precio': forms.NumberInput(attrs={'readonly': 'readonly'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['precio'].widget.attrs['step'] = 1
+
+
+class PagoForm(forms.Form):
+    token = forms.CharField(widget=forms.HiddenInput())
+    payment_method_id = forms.CharField(widget=forms.HiddenInput())
+    email = forms.EmailField()
+    
+    
+
+
+class ConsultaForm(forms.ModelForm):
+    nombre_completo = forms.CharField(
+        label='Nombre Completo',
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$',
+                message='El nombre solo debe contener letras'
+            ),
+            MinLengthValidator(5, 'El nombre debe tener al menos 5 caracteres')
+        ]
+    )
+    
+    rut = forms.CharField(
+        label='RUT',
+        max_length=12,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]{1}$',
+                message='Formato de RUT inválido (Ej: 12.345.678-9)'
+            )
+        ]
+    )
+    
+    telefono = forms.CharField(
+        label='Teléfono',
+        validators=[
+            RegexValidator(
+                regex=r'^\+?569\d{8}$',
+                message='Ingrese un número válido (+56912345678)'
+            )
+        ]
+    )
+    
+    email = forms.EmailField(
+        label='Email',
+        error_messages={
+            'invalid': 'Por favor ingrese un email válido'
+        }
+    )
+
+    class Meta:
+        model = Consulta
+        fields = ['nombre_completo', 'rut', 'telefono', 'email', 'fecha', 'hora', 'profesional', 'precio']
+        widgets = {
+            'fecha': forms.DateInput(attrs={'type': 'date'}),
+            'hora': forms.TimeInput(attrs={'type': 'time'}),
+            'precio': forms.NumberInput(attrs={'readonly': 'readonly'}),
+        }
+
+    def clean_rut(self):
+        rut = self.cleaned_data.get('rut')
+        if not self.validar_rut(rut):
+            raise forms.ValidationError('RUT inválido')
+        return rut
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data.get('telefono')
+        if not telefono.startswith('+569'):
+            raise forms.ValidationError('El teléfono debe comenzar con +569')
+        return telefono
+
+    def validar_rut(self, rut):
+        try:
+            rut = rut.replace(".", "").replace("-", "")
+            if not re.match(r'^\d{7,8}[0-9Kk]{1}$', rut):
+                return False
+            
+            valor = rut[:-1]
+            dv = rut[-1].upper()
+            suma = 0
+            multiplo = 2
+            
+            for i in reversed(valor):
+                suma += int(i) * multiplo
+                multiplo = 2 if multiplo == 7 else multiplo + 1
+            
+            resultado = 11 - (suma % 11)
+            dv_esperado = {10: 'K', 11: '0'}.get(resultado, str(resultado))
+            
+            return dv == dv_esperado
+            
+        except (TypeError, ValueError):
+            return False
+
+class PagoForm(forms.Form):
+    token = forms.CharField(widget=forms.HiddenInput())
+    payment_method_id = forms.CharField(widget=forms.HiddenInput())
+    email = forms.EmailField(
+        error_messages={
+            'required': 'El email es requerido',
+            'invalid': 'Por favor ingrese un email válido'
+        })
+
+class EspecialidadForm(forms.ModelForm):
+    class Meta:
+        model = Especialidad
+        fields = ['nombre', 'descripcion']
