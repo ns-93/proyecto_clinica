@@ -36,7 +36,6 @@
                                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                                     <i class="bi bi-pencil-fill me-2"></i>Editar Perfil
                                 </button>
-                                <a href="{% url 'reservas' %}">Ver Reservas</a> <!-- Reemplaza 'valid_view_name' con 'reservas' -->
                                 <form action="{% url 'logout' %}" method="post">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-danger w-100">
